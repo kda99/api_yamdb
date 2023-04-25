@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField
 
 
-class Categories(models.Model):
+class Category(models.Model):
     """Модель категории произведения"""
     
     #"name": "string", <= 256 characters
@@ -11,7 +11,7 @@ class Categories(models.Model):
     pass
 
 
-class Genres(models.Model):
+class Genre(models.Model):
     """Модель жанра произведения"""
     
     #"name": "string", <= 256 characters
@@ -33,15 +33,13 @@ class Title(models.Model):
     genre = ArrayField(
             models.CharField(max_length=10, blank=True),
         )
-    #здесь не использовал ForeignKey, потому что в документации указано, что эта модель string
-    #опять же буду разбираться
-    category = models.CharField(verbose_name='Slug категории')
+    category = models.ForeignKey(Category, verbose_name='Категории')
 
     def __str__(self):
         return self.name
 
 
-class Comments(models.Model):
+class Comment(models.Model):
     """Модель комментария к отзыву"""
     #title_id integer (ID произведения)
     #review_id integer (ID отзыва)
@@ -53,7 +51,7 @@ class Comments(models.Model):
     pass
 
 
-class Reviews(models.Model):
+class Review(models.Model):
     """Модель отзыва"""
     #"text": "string", string (Текст отзыва)
     #"score": 1 	 integer (Оценка) [ 1 .. 10 ]
