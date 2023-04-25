@@ -59,5 +59,24 @@ class Review(models.Model):
     #"pub_date": "2019-08-24T14:15:22Z"
     #"author": "string",
     #"id": 0,
+    author = models.ForeignKey(
+        #User, #Пока нет юзера
+        on_delete=models.CASCADE,
+        verbose_name='Автор отзыва'
+    )
+    titel = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        verbose_name='Произведение'
+    )
+    text = models.TextField(verbose_name='Комментарий')
+    score = models.IntegerChoices() #Буду разбираться, как лучше сделать выбор
+    pub_date = models.DateTimeField(
+        'Дата добавления', auto_now_add=True, db_index=True)
 
-    pass
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['author', 'titel'], name='unique_reviewing'
+            )
+        ]
