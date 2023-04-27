@@ -1,5 +1,35 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
+
+
+class User(AbstractUser):
+    ADMIN = 'admin'
+    MODERATOR = 'moderator'
+    USER = 'user'
+    ROLS = [(ADMIN, 'admin'), (MODERATOR, 'moderator'), (USER, 'user')]
+
+    email = models.EmailField(
+        max_length=254,
+        verbose_name='Эл. почта',
+        unique=True,
+    )
+    username = models.TextField(
+        max_length=150,
+        verbose_name='Имя пользователя',
+        unique=True
+    )
+    role = models.CharField(
+        max_length=25,
+        verbose_name='Права пользователя',
+        choices=ROLS,
+        default=USER,
+    )
+    bio = models.TextField(
+        verbose_name='О себе',
+        null=True,
+        blank=True,
+    )
 
 
 class Category(models.Model):
@@ -62,12 +92,12 @@ class Title(models.Model):
     )
     genre = models.ForeignKey(
         Genre,
-        on_delete=models.SET_DEFAULT,
+        on_delete=models.CASCADE,  #.SET_DEFAULT,
         verbose_name='Жанр произведения'
     )
     category = models.ForeignKey(
         Category,
-        on_delete=models.SET_DEFAULT,
+        on_delete=models.CASCADE,  #.SET_DEFAULT,
         verbose_name='Категория произведения'
     )
 
@@ -80,11 +110,11 @@ class Title(models.Model):
 
 class Review(models.Model):
     """Модель отзыва"""
-    #author = models.ForeignKey(
-        #User, #Пока нет юзера
-    #    on_delete=models.CASCADE,
-    #    verbose_name='Автор отзыва'
-    #)
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='Автор отзыва'
+    )
     titel = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
@@ -108,12 +138,12 @@ class Review(models.Model):
 
 class Comment(models.Model):
     """Модель комментария к отзыву"""
-    #author = models.ForeignKey(
-    #    #User,
-    #    on_delete=models.CASCADE,
-    #    related_name='comments',
-    #    verbose_name='Автор комментария'
-    #)
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Автор комментария'
+    )
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
