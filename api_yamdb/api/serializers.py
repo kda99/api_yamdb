@@ -31,3 +31,8 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = '__all__'
         model = Comment
         read_only_fields = ('review',)
+
+
+class LoginAPISerializer(serializers.Serializer):
+    email  = serializers.EmailField()
+    password = serializers.CharField()
