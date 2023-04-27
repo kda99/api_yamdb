@@ -22,8 +22,14 @@ class LoginAPI(APIView):
                         'refresh': str(refresh),
                         'access': str(refresh.access_token),
                     }
-            return Response(
+            return Response({
                 'status': 400,
                 'message': "Invalid password",
                 'data': {},
+            })
+        except:
+            return Response(
+                {'status': '400'},
+                {'message': "Invalid password"},
+                {'data': {request.error}},
             )

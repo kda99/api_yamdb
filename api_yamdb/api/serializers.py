@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from reviews.models import User, Comment
+from api_yamdb.reviews.models import User, Comment
 
 
 class UserSerializers(serializers.ModelSerializer):
