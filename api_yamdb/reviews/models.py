@@ -61,71 +61,80 @@ class Title(models.Model):
         help_text='Введите описание произведения'
     )
     genre = models.ForeignKey(
-        'Genre',
+        Genre,
         on_delete=models.SET_DEFAULT,
         verbose_name='Жанр произведения'
     )
     category = models.ForeignKey(
-        'Category',
+        Category,
         on_delete=models.SET_DEFAULT,
         verbose_name='Категория произведения'
     )
 
-    class Meta:
-        ordering = ('pub_date',)
+    #class Meta:
+    #    ordering = ('pub_date',)
 
     def __str__(self):
         return self.name
 
 
-class Comment(models.Model):
-    """Модель комментария к отзыву"""
-    review_id = models.ForeignKey(
-        'Review',
-        on_delete=models.CASCADE,
-        related_name='comments'
-    )
-    text = models.TextField(
-        verbose_name='Коммент',
-        help_text='Введите текст коммента'
-    )
-    #здесь пока что закомментил строку "author", потому что она ссылается на модель User
-    #а модели "User" пока что нет
-    #author = models.ForeignKey(
-    #    User,
-    #    on_delete=models.CASCADE,
-    #    related_name='comments'
-    #)
-    pub_date = models.DateTimeField(
-        auto_now_add=True
-    )
-
-
 class Review(models.Model):
     """Модель отзыва"""
-    text = models.TextField(
-        verbose_name='Отзыв',
-        help_text='Введите текст отзыва'
+    #author = models.ForeignKey(
+        #User, #Пока нет юзера
+    #    on_delete=models.CASCADE,
+    #    verbose_name='Автор отзыва'
+    #)
+    titel = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        verbose_name='Произведение'
     )
+    text = models.TextField(verbose_name='Комментарий')
     score = models.IntegerField(
         verbose_name='Оценка в отзыве к произведению',
         validators=[MinValueValidator(1), MaxValueValidator(10)]
     )
-    title_id = models.ForeignKey(
-        'Title',
-        on_delete=models.CASCADE,
-        related_name='reviews'
-    )
     pub_date = models.DateTimeField(
-        auto_now_add=True
-    )
-    #здесь пока что закомментил строку "author", потому что она ссылается на модель User
-    #а модели "User" пока что нет
-    #author = models.ForeignKey(
-    #    User,
-    #    on_delete=models.CASCADE,
-    #    related_name='reviews'
-    #)
+        'Дата добавления', auto_now_add=True, db_index=True)
 
     class Meta:
-        ordering = ('pub_date',)
+        constraints = [
+            models.UniqueConstraint(
+                fields=['author', 'titel'], name='unique_reviewing'
+            )
+        ]
+
+
+class Comment(models.Model):
+    """Модель комментария к отзыву"""
+    #author = models.ForeignKey(
+    #    #User,
+    #    on_delete=models.CASCADE,
+    #    related_name='comments',
+    #    verbose_name='Автор комментария'
+    #)
+    review = models.ForeignKey(
+        Review,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Отзыв'
+    )
+    titel = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Произведение'
+    )
+    text = models.TextField(verbose_name='Комментарий')
+    pub_date = models.DateTimeField(
+        'Дата добавления', auto_now_add=True, db_index=True)
+
+    class Meta:
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Коментарии'
+
+    def __str__(self):
+        return '"{}" to review "{}" by author "{}"'.format(
+            self.text, self.review, self.author
+        )
