@@ -115,7 +115,7 @@ class Review(models.Model):
         on_delete=models.CASCADE,
         verbose_name='Автор отзыва'
     )
-    titel = models.ForeignKey(
+    title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
         verbose_name='Произведение'
@@ -131,7 +131,7 @@ class Review(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['author', 'titel'], name='unique_reviewing'
+                fields=['author', 'title'], name='unique_reviewing'
             )
         ]
 
@@ -150,7 +150,7 @@ class Comment(models.Model):
         related_name='comments',
         verbose_name='Отзыв'
     )
-    titel = models.ForeignKey(
+    title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
         related_name='comments',
