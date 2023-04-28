@@ -2,11 +2,13 @@ from django.contrib.auth import authenticate
 from rest_framework.generics import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import authentication, permissions, pagination, viewsets
+from rest_framework import authentication, permissions, pagination, viewsets, status
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.decorators import action
 
 from reviews.models import Category, Genre, Title, Review, User
-from .serializers import UserSerializers, CommentSerializer, ReviewSerializer
+from .serializers import UserSerializer, UserEditSerializer, CommentSerializer, ReviewSerializer
 '''
 from django.shortcuts import get_object_or_404
 from rest_framework.pagination import LimitOffsetPagination
@@ -21,7 +23,30 @@ from .serializers import LoginAPISerializer
 class UserViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
     queryset = User.objects.all()
-    serializer_class = UserSerializers
+    serializer_class = UserSerializer
+    pagination_class = PageNumberPagination
+    permission_classes = (permissions.IsAdminUser,)
+
+    @action(
+        methods=['get', 'patch'], detail=False, url_name='me',
+        pagination_class = [permissions.IsAuthenticated], serializer_class=UserEditSerializer
+    )
+    def user_own_profile(self, request):
+        user = request.user
+        if request.method == "GET":
+            serializer = self.get_serializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        if request.method == "PATCH":
+            serializer = self.get_serializer(
+                user,
+                data=request.data,
+                partial=True
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.seve()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        
 
 
 class CommentViewSet(viewsets.ModelViewSet):

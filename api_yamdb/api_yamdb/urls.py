@@ -23,7 +23,6 @@ from api.views import LoginAPI
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('api.urls')),
     path(
         'redoc/',
         TemplateView.as_view(template_name='redoc.html'),
@@ -32,4 +31,5 @@ urlpatterns = [
     path('api/v1/token/', TokenObtainPairView.as_view(),
          name='token_obtain_pair'),
     path('api/v1/login/', LoginAPI.as_view()),
+    path('api/', include('api.urls')),
 ]

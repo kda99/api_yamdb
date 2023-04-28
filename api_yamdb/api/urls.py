@@ -5,12 +5,12 @@ from .views import UserViewSet, CommentViewSet, ReviewViewSet
 
 router_v1 = DefaultRouter()
 
-router_v1.register('users', UserViewSet, basename='users')
-router_v1.register('review', ReviewViewSet, basename='review')
-router_v1.register('posts/(?P<post_id>\\d+)/comments', CommentViewSet,
-                   basename='comments')
+router_v1.register(r'users', UserViewSet, basename='users')
+router_v1.register(r'titles/(?P<titel_id>\d+)/reviews', ReviewViewSet,
+                   basename='reviews')
+router_v1.register(r'titles/(?P<titel_id>\d+)/reviews/(?P<review_id>\d+)'
+                   r'/comments', CommentViewSet, basename='comments')
 
 urlpatterns = [
     path('v1/', include(router_v1.urls)),
-    #path('v1/', include('djoser.urls.jwt')),
 ]
