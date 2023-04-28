@@ -129,6 +129,7 @@ class Review(models.Model):
         'Дата добавления', auto_now_add=True, db_index=True)
 
     class Meta:
+        default_related_name = 'reviews'
         constraints = [
             models.UniqueConstraint(
                 fields=['author', 'title'], name='unique_reviewing'
@@ -161,6 +162,7 @@ class Comment(models.Model):
         'Дата добавления', auto_now_add=True, db_index=True)
 
     class Meta:
+        default_related_name = 'comments'
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Коментарии'
 
