@@ -58,7 +58,7 @@ class User(AbstractUser):
 class Category(models.Model):
     """Модель категории произведения"""
     name = models.CharField(
-        max_length=256,
+        max_length=254,
         verbose_name='Название категории'
     )
     slug = models.SlugField(
