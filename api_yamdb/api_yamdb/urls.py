@@ -18,7 +18,7 @@ from django.urls import path, include
 from django.views.generic import TemplateView
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from api_yamdb.api.views import LoginAPI
+from api.views import LoginAPI
 
 
 urlpatterns = [
