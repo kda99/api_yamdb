@@ -115,12 +115,12 @@ class Title(models.Model):
     )
     genre = models.ForeignKey(
         Genre,
-        on_delete=models.SET_DEFAULT,
+        on_delete=models.SET_NULL,
         verbose_name='Жанр произведения'
     )
     category = models.ForeignKey(
         Category,
-        on_delete=models.SET_DEFAULT,
+        on_delete=models.SET_NULL,
         verbose_name='Категория произведения'
     )
 
