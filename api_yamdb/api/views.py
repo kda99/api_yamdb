@@ -47,7 +47,6 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.seve()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        
 
 
 class CommentViewSet(viewsets.ModelViewSet):

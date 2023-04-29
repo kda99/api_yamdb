@@ -1,18 +1,18 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from api_yamdb.reviews.models import User, Comment, Review
+from reviews.models import User, Comment, Review
 
 
 class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
-        validatirs=[
+        validators=[
             UniqueValidator(queryset=User.objects.all())
         ],
         required=True,
     )
     email = serializers.EmailField(
-        validatirs=[
+        validators=[
             UniqueValidator(queryset=User.objects.all())
         ],
         required=True,
