@@ -92,17 +92,17 @@ class Title(models.Model):
     )
     genre = models.ForeignKey(
         Genre,
-        on_delete=models.CASCADE,  #.SET_DEFAULT,
+        on_delete=models.SET_DEFAULT,
         verbose_name='Жанр произведения'
     )
     category = models.ForeignKey(
         Category,
-        on_delete=models.CASCADE,  #.SET_DEFAULT,
+        on_delete=models.SET_DEFAULT,
         verbose_name='Категория произведения'
     )
 
-    #class Meta:
-    #    ordering = ('pub_date',)
+    class Meta:
+        ordering = ('name',)
 
     def __str__(self):
         return self.name
