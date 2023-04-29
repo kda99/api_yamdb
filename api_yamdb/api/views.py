@@ -62,6 +62,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return title.review.all()
 
 
+'''
 class LoginAPI(APIView):
     def post(self, request):
         try:
@@ -82,6 +83,7 @@ class LoginAPI(APIView):
                 'message': "Invalid password",
                 'data': {},}
             )
+'''
 
 
 class CategoryViewSet(viewsets.ModelViewSet):

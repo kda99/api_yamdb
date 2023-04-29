@@ -18,7 +18,7 @@ from django.urls import path, include
 from django.views.generic import TemplateView
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from api.views import LoginAPI
+#from api_yamdb.api.views import LoginAPI
 
 
 urlpatterns = [
@@ -30,6 +30,6 @@ urlpatterns = [
     ),
     path('api/v1/token/', TokenObtainPairView.as_view(),
          name='token_obtain_pair'),
-    path('api/v1/login/', LoginAPI.as_view()),
+    #path('api/v1/login/', LoginAPI.as_view()),
     path('api/', include('api.urls')),
 ]
