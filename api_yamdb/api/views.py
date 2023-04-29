@@ -109,10 +109,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, title=self.get_title())
 
     def get_queryset(self):
-        return self.get_title().reviews.all()
-
-    def get_score(self):
-        return self.get_queryset().objects.aggregate(Avg('score'))
+        return self.get_title().reviews.all().annotate(int(Avg('score')))
 
 
 class CommentViewSet(viewsets.ModelViewSet):
