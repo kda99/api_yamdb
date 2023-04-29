@@ -104,7 +104,6 @@ class Title(models.Model):
         verbose_name='Название произведения'
     )
     year = models.IntegerField(
-        max_length=4,
         blank=True,
         null=True,
         verbose_name='Год выпуска'
