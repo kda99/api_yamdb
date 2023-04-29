@@ -90,13 +90,3 @@ class TitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Title
         fields = '__all__'
-
-
-class ReviewSerializer(serializers.ModelSerializer):
-    title = serializers.SlugRelatedField(
-        slug_field='name', read_only=True
-    )
-
-    class Meta:
-        model = Review
-        fields = '__all__'

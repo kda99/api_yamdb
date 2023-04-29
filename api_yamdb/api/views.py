@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate
+from django.db.models import Avg
 #from django.shortcuts import get_object_or_404
 from rest_framework.generics import get_object_or_404
 from rest_framework.views import APIView
@@ -46,20 +47,6 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.seve()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-
-class CommentViewSet(viewsets.ModelViewSet):
-    serializer_class = CommentSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly)
-
-
-class ReviewViewSet(viewsets.ModelViewSet):
-    serializer_class = ReviewSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly)
-
-    def get_queryset(self):
-        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
-        return title.review.all()
 
 
 '''
@@ -111,7 +98,6 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    queryset = Review.objects.all()
     serializer_class = ReviewSerializer
     permission_classes = (IsAuthorOrReadOnly,)
     pagination_class = LimitOffsetPagination
@@ -124,6 +110,9 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return self.get_title().reviews.all()
+
+    def get_score(self):
+        return self.get_queryset().objects.aggregate(Avg('score'))
 
 
 class CommentViewSet(viewsets.ModelViewSet):
