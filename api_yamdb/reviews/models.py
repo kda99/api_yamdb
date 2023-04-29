@@ -31,6 +31,9 @@ class User(AbstractUser):
         blank=True,
     )
 
+    # Добавил поле для логики работы регистрации пользователя
+    is_active = models.BooleanField(default=False)
+
     @property
     def is_moderator(self):
         return self.role == self.MODERATOR
