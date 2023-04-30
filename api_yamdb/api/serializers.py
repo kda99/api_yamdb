@@ -121,5 +121,8 @@ class TitleSerializer(serializers.ModelSerializer):
 
 
 class SignUpSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField()
+    password = serializers.CharField()
+
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
