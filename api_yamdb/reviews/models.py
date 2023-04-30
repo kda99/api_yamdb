@@ -31,6 +31,10 @@ class User(AbstractUser):
         blank=True,
     )
 
+    password =  models.CharField(max_length=128,
+                                 verbose_name='password',
+                                 blank=True)
+
     # Добавил поле для логики работы регистрации пользователя
     is_active = models.BooleanField(default=False)
 
@@ -41,6 +45,10 @@ class User(AbstractUser):
     @property
     def is_admin(self):
         return self.role == self.ADMIN
+
+    @property
+    def is_user(self):
+        return self.role == self.USER
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
