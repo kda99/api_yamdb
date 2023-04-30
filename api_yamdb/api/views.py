@@ -19,6 +19,7 @@ from .serializers import (UserSerializer, UserEditSerializer,
                           ReadOnlyTitleSerializer)
 
 
+@api_views(['POST'])
 class UserViewSet(viewsets.ModelViewSet):
     lookup_field = "username"
     queryset = User.objects.all()
@@ -46,30 +47,6 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.seve()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-
-'''
-class LoginAPI(APIView):
-    def post(self, request):
-        try:
-            data = request.data
-            serializer = LoginAPISerializer(data = data)
-            if serializer.is_valid():
-                email = serializer.data['email']
-                password = serializer.data['password']
-                user = authenticate(email=email, password=password)
-                if user is not None:
-                    refresh = RefreshToken.for_user(user)
-                    return {
-                        'refresh': str(refresh),
-                        'access': str(refresh.access_token),
-                    }
-            return Response(
-                'status': 400,
-                'message': "Invalid password",
-                'data': {},}
-            )
-'''
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
