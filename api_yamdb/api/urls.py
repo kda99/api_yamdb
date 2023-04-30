@@ -16,11 +16,16 @@ router_v1.register(r'titles/(?P<titel_id>\d+)/reviews/(?P<review_id>\d+)'
 router_v1.register(r'categories', CategoryViewSet)
 router_v1.register(r'genres', GenreViewSet)
 router_v1.register(r'titles', TitleViewSet)
+router_v1.register(r'titles', TitleViewSet)
+# router_v1.register(r'auth/signup/', signup)
+# router_v1.register(r'auth/token/', token)
+# router_v1.register(r'users/me/', update_profile)
 
 urlpatterns = [
-    path('v1/', include(router_v1.urls)),
-    path('v1/auth/signup/', signup, name='auth_signup'),
-    path('v1/auth/token/', token, name='token'),
-    path('v1/users/me/', update_profile, name='update_profile'),
+    path('api/v1/', include(router_v1.urls)),
+    path('api/v1/auth/signup/', signup, name='auth_signup'),
+    # path('auth/signup/', signup, name='auth_signup'),
+    # path('auth/token/', token, name='token'),
+    # path('users/me/', update_profile, name='update_profile'),
 
 ]

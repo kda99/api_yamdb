@@ -5,12 +5,12 @@ from rest_framework.response import Response
 from rest_framework import permissions, viewsets, status
 from rest_framework.pagination import (PageNumberPagination,
                                        LimitOffsetPagination)
-from rest_framework.decorators import action
+from rest_framework.decorators import action, permission_classes, api_view
 from rest_framework.permissions import SAFE_METHODS
 from django.core.mail import send_mail
 import jwt
-from rest_framework.decorators import api_view
 from django.conf import settings
+from rest_framework.permissions import IsAuthenticated
 
 from reviews.models import Category, Genre, Title, Review, User
 from .permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrReadOnly
@@ -155,6 +155,7 @@ def token(request):
 
     return Response({'token': token}, status=200)
 
+# @permission_classes([IsAuthenticated])
 @api_view(['GET','PATCH'])
 def update_profile(request):
     if request.method == 'PATCH':
