@@ -1,10 +1,9 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .views import (UserViewSet, CommentViewSet, ReviewViewSet,
-                    CategoryViewSet, TitleViewSet, GenreViewSet,
-                    SignupView, TokenView,)
+                    CategoryViewSet, TitleViewSet, GenreViewSet)
 
 router_v1 = DefaultRouter()
 
@@ -13,12 +12,12 @@ router_v1.register(r'titles/(?P<titel_id>\d+)/reviews', ReviewViewSet,
                    basename='reviews')
 router_v1.register(r'titles/(?P<titel_id>\d+)/reviews/(?P<review_id>\d+)'
                    r'/comments', CommentViewSet, basename='comments')
-router_v1.register(r'categories', CategoryViewSet, basename='categories')
-router_v1.register(r'genres', GenreViewSet, basename='genres')
-router_v1.register(r'titles', TitleViewSet, basename='titles')
+router_v1.register(r'categories', CategoryViewSet)
+router_v1.register(r'genres', GenreViewSet)
+router_v1.register(r'titles', TitleViewSet)
 
 urlpatterns = [
-    path('api/v1/', include(router_v1.urls)),
-    path('api/v1/auth/signup/', SignupView, name='auth_signup'),
-    path('api/v1/auth/token/', TokenView, name='token'),
+    path('v1/', include(router_v1.urls)),
+    path('api/v1/token/', TokenObtainPairView.as_view(),
+         name='token_obtain_pair'),
 ]

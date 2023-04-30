@@ -31,13 +31,6 @@ class User(AbstractUser):
         blank=True,
     )
 
-    password =  models.CharField(max_length=128,
-                                 verbose_name='password',
-                                 blank=True)
-
-    # Добавил поле для логики работы регистрации пользователя
-    is_active = models.BooleanField(default=False)
-
     @property
     def is_moderator(self):
         return self.role == self.MODERATOR
@@ -45,10 +38,6 @@ class User(AbstractUser):
     @property
     def is_admin(self):
         return self.role == self.ADMIN
-
-    @property
-    def is_user(self):
-        return self.role == self.USER
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
@@ -127,13 +116,13 @@ class Title(models.Model):
         Genre,
         on_delete=models.SET_DEFAULT,
         verbose_name='Жанр произведения',
-        default = 'Жанр'
+        default='Жанр'
     )
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_DEFAULT,
         verbose_name='Категория произведения',
-        default = 'Категория'
+        default='Категория'
     )
 
     class Meta:
