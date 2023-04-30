@@ -7,7 +7,7 @@ class User(AbstractUser):
     ADMIN = 'admin'
     MODERATOR = 'moderator'
     USER = 'user'
-    ROLS = [(ADMIN, 'admin'), (MODERATOR, 'moderator'), (USER, 'user')]
+    ROLS = ((ADMIN, 'admin'), (MODERATOR, 'moderator'), (USER, 'user'))
 
     email = models.EmailField(
         max_length=254,
@@ -29,6 +29,14 @@ class User(AbstractUser):
         verbose_name='О себе',
         null=True,
         blank=True,
+    )
+    first_name = models.TextField(
+        max_length=150,
+        verbose_name='Имя',
+    )
+    last_name = models.TextField(
+        max_length=150,
+        verbose_name='Фамилия',
     )
 
     @property

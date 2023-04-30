@@ -1,20 +1,31 @@
 from rest_framework import serializers, exceptions
 from rest_framework.validators import UniqueValidator
 from rest_framework.generics import get_object_or_404
+from django.core.validators import EmailValidator, MaxLengthValidator, RegexValidator
 
 from reviews.models import User, Category, Genre, Title, Review, Comment
 
 
+# def validate_
+
+
 class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
+        max_length=150,
         validators=[
-            UniqueValidator(queryset=User.objects.all())
+            UniqueValidator(queryset=User.objects.all()),
+            MaxLengthValidator(limit_value=150),
+            RegexValidator(r'^[\w.@+-]+$', code=400),
+
         ],
         required=True,
     )
     email = serializers.EmailField(
+        max_length=254,
         validators=[
-            UniqueValidator(queryset=User.objects.all())
+            UniqueValidator(queryset=User.objects.all()),
+            EmailValidator(code=400),
+            MaxLengthValidator(limit_value=254),
         ],
         required=True,
     )
@@ -107,3 +118,8 @@ class TitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Title
         fields = '__all__'
+
+
+class SignUpSerializer(serializers.ModelSerializer):
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)

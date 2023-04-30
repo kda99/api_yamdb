@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate
+from django.contrib.auth.models import Permission
 from django.db.models import Avg
 from rest_framework.generics import get_object_or_404
 from rest_framework.views import APIView
@@ -8,7 +9,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.pagination import (PageNumberPagination,
                                        LimitOffsetPagination)
 from rest_framework.decorators import action
-from rest_framework.permissions import SAFE_METHODS
+from rest_framework.permissions import SAFE_METHODS, AllowAny
+from rest_framework import mixins
+from django.core.mail import send_mail
+import jwt
+from django.conf import settings
 
 from reviews.models import Category, Genre, Title, Review, User
 from .permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrReadOnly
@@ -16,7 +21,9 @@ from .serializers import (UserSerializer, UserEditSerializer,
                           LoginAPISerializer, CategorySerializer,
                           GenreSerializer, TitleSerializer,
                           ReviewSerializer, CommentSerializer,
-                          ReadOnlyTitleSerializer)
+                          ReadOnlyTitleSerializer, SignUpSerializer)
+
+JWT_SECRET_KEY = settings.SECRET_KEY
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -122,3 +129,44 @@ class CommentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         review = get_object_or_404(Review, id=self.kwargs.get('review_id'))
         serializer.save(author=self.request.user, review=review)
+
+
+# class CreateRetrieveViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+#     pass
+#
+#
+# class SignUp(CreateRetrieveViewSet):
+#     queryset = User.objects.all()
+#     serializer_class = UserSerializer
+
+
+
+class SignUpViewSet(viewsets.ViewSet):
+    serializer_class = SignUpSerializer
+    permission_classes = [AllowAny]
+
+    def create(self, request):
+        email = request.POST.get('email')
+        username = request.POST.get('username')
+
+        # Validate username
+        if username == 'me':
+            return Response({'error': 'The use of the name "me" is not allowed.'}, status=400)
+
+        # Validate input data
+        if not email or not username:
+            return Response({'error': 'Email and username are required.'}, status=400)
+
+        # Create user object with is_active=False, which means the user is not yet verified.
+        user = User.objects.create_user(username=username, email=email, is_active=False)
+        # serializer.save(username=username, email=email, is_active=False)
+        # Generate confirmation code and send to the user's email.
+        confirmation_code_payload = {'user_id': str(user.id)}
+        confirmation_code = jwt.encode(confirmation_code_payload, JWT_SECRET_KEY).decode()
+        message = f'Your confirmation code is {confirmation_code}.'
+        send_mail('Confirm your account', message, from_email=None, recipient_list=[email], fail_silently=False)
+
+        return Response({"email": email, "username": username}, status=201)
+
+
+# class Token(CreateRetrieveViewSet):
