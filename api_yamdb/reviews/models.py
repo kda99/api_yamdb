@@ -116,13 +116,12 @@ class Title(models.Model):
         null=True,
         verbose_name='Год выпуска'
     )
-    text = models.TextField(
-        verbose_name='Описание произведения',
-        help_text='Введите описание произведения'
+    description = models.TextField(
+        blank=True,
+        verbose_name='Описание'
     )
-    genre = models.ForeignKey(
+    genre = models.ManyToManyField(
         Genre,
-        on_delete=models.SET_DEFAULT,
         verbose_name='Жанр произведения',
         default='Жанр'
     )
