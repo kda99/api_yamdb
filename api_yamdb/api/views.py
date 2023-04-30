@@ -12,7 +12,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS, AllowAny
 from rest_framework import mixins
 from django.core.mail import send_mail
-import jwt
+from jwt import encode, decode
 from django.conf import settings
 
 from reviews.models import Category, Genre, Title, Review, User
@@ -55,28 +55,34 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
-'''
-class LoginAPI(APIView):
-    def post(self, request):
-        try:
-            data = request.data
-            serializer = LoginAPISerializer(data = data)
-            if serializer.is_valid():
-                email = serializer.data['email']
-                password = serializer.data['password']
-                user = authenticate(email=email, password=password)
-                if user is not None:
-                    refresh = RefreshToken.for_user(user)
-                    return {
-                        'refresh': str(refresh),
-                        'access': str(refresh.access_token),
-                    }
-            return Response(
-                'status': 400,
-                'message': "Invalid password",
-                'data': {},}
-            )
-'''
+
+# class LoginAPI(APIView):
+#     def post(self, request):
+#         try:
+#             data = request.data
+#             serializer = LoginAPISerializer(data = data)
+#             if serializer.is_valid():
+#                 email = serializer.data['email']
+#                 password = serializer.data['password']
+#                 user = authenticate(email=email, password=password)
+#                 if user is not None:
+#                     refresh = RefreshToken.for_user(user)
+#                     return {
+#                         'refresh': str(refresh),
+#                         'access': str(refresh.access_token),
+#                     }
+#             return Response({
+#                 'status': 200,
+#                 'message': "Invalid password",
+#                 'data': {},}
+#             )
+#         except Exception:
+#             return Response({
+#             'status': 400,
+#             'message': "Invalid password",
+#             'data': {}, }
+#             )
+
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -143,7 +149,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 class SignUpViewSet(viewsets.ViewSet):
     serializer_class = SignUpSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [AllowAny,]
 
     def create(self, request):
         email = request.POST.get('email')
@@ -162,7 +168,7 @@ class SignUpViewSet(viewsets.ViewSet):
         # serializer.save(username=username, email=email, is_active=False)
         # Generate confirmation code and send to the user's email.
         confirmation_code_payload = {'user_id': str(user.id)}
-        confirmation_code = jwt.encode(confirmation_code_payload, JWT_SECRET_KEY).decode()
+        confirmation_code = encode(confirmation_code_payload, JWT_SECRET_KEY).decode()
         message = f'Your confirmation code is {confirmation_code}.'
         send_mail('Confirm your account', message, from_email=None, recipient_list=[email], fail_silently=False)
 

@@ -121,8 +121,25 @@ class TitleSerializer(serializers.ModelSerializer):
 
 
 class SignUpSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField()
-    password = serializers.CharField()
-
+    email = serializers.EmailField(validators=[UniqueValidator(queryset=User.objects.all()),
+            EmailValidator(code=400),
+            MaxLengthValidator(limit_value=254)],)
+    username = serializers.CharField(validators=[UniqueValidator(queryset=User.objects.all()),
+            MaxLengthValidator(limit_value=150),
+            RegexValidator(r'^[\w.@+-]+$', code=400),])
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        serializer.save(username=request.POST.get('username'), email=request.POST.get('email'), is_active=False)
+
+    def validate_username(self, data):
+        if not re.fullmatch(data, r'^[\w.@+- ]+$') or len(data)>150 or data:
+            return Response({
+                # "username": request.POST.get('username'),
+                # "email": request.POST.get('email'),
+                # "first_name": request.POST.get("first_name"),
+                # "last_name": request.POST.get("last_name"),
+                # "bio": request.POST.get("bio"),
+            },
+                status=401
+            )
+        return data
+

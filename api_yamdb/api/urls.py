@@ -15,11 +15,8 @@ router_v1.register(r'titles/(?P<titel_id>\d+)/reviews/(?P<review_id>\d+)'
 router_v1.register(r'categories', CategoryViewSet)
 router_v1.register(r'genres', GenreViewSet)
 router_v1.register(r'titles', TitleViewSet)
-router_v1.register(r'auth/signup', SignUpViewSet, basename='signup')
+router_v1.register(r'auth/signup', SignUpViewSet, basename='auth')
 
 urlpatterns = [
     path('v1/', include(router_v1.urls)),
-    # path('api/v1/auth/signup/', signup)
-    # path('api/v1/token/', TokenObtainPairView.as_view(),
-    #      name='token_obtain_pair'),
 ]
