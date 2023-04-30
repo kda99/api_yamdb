@@ -175,4 +175,4 @@ class SignUpViewSet(viewsets.ViewSet):
         return Response({"email": email, "username": username}, status=201)
 
 
-class Token(CreateRetrieveViewSet):
+# class Token(CreateRetrieveViewSet):
