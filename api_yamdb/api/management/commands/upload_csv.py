@@ -1,6 +1,6 @@
 from csv import DictReader
 from django.core.management import BaseCommand
-from reviews.models import Category, Genre, Title, Review, Comment, User
+from reviews.models import Category, Genre, Title, Review, Comment, User, GenreTitle
 
 
 class Command(BaseCommand):
@@ -27,16 +27,16 @@ class Command(BaseCommand):
                 id=row['id'],
                 name=row['name'],
                 year=row['year'],
-                category=row['category'],
+                category_id=row['category'],
             )
             title.save()
 
         for row in DictReader(open('static/data/review.csv', encoding='utf-8')):
             review = Review(
                 id=row['id'],
-                title=row['title_id'],
+                title_id=row['title_id'],
                 text=row['text'],
-                author=row['author'],
+                author_id=row['author'],
                 score=row['score'],
                 pub_date=row['pub_date'],
             )
@@ -45,9 +45,9 @@ class Command(BaseCommand):
         for row in DictReader(open('static/data/comments.csv', encoding='utf-8')):
             comments = Comment(
                 id=row['id'],
-                review=row['review_id'],
+                review_id=row['review_id'],
                 text=row['text'],
-                author=row['author'],
+                author_id=row['author'],
                 pub_date=row['pub_date'],
             )
             comments.save()
@@ -59,7 +59,18 @@ class Command(BaseCommand):
                 email=row['email'],
                 role=row['role'],
                 bio=row['bio'],
+                first_name=row['first_name'],
+                last_name=row['last_name'],
             )
             user.save()
+        
+        for row in DictReader(
+                open('static/data/genre_title.csv', encoding='utf-8')):
+            genre_title = GenreTitle(
+                id=row['id'],
+                title_id=row['title_id'],
+                genre_id=row['genre_id'],
+            )
+            genre_title.save()
 
         print('Файлы загружены')
