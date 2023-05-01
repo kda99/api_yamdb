@@ -1,5 +1,5 @@
 from reviews.models import (Category, Comment, Genre, Review,
-                            Title, User)
+                            Title, User, GenreTitle)
 
 from django.contrib import admin
 
@@ -9,3 +9,4 @@ admin.site.register(Genre)
 admin.site.register(Title)
 admin.site.register(Review)
 admin.site.register(Comment)
+admin.site.register(GenreTitle)
