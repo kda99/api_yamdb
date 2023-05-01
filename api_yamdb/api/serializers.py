@@ -68,7 +68,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         request = self.context['request']
-        author = self.context['request'].user
+        author = request.user
         title_id = self.context['view'].kwargs.get('title_id')
         title = get_object_or_404(Title, pk=title_id)
         if request.method == 'POST':
@@ -101,9 +101,7 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class ReadOnlyTitleSerializer(serializers.ModelSerializer):
-    genre = GenreSerializer(
-        many=True
-    )
+    genre = GenreSerializer(many=True)
     category = CategorySerializer()
 
     class Meta:
