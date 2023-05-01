@@ -1,7 +1,9 @@
 from rest_framework import serializers, exceptions
 from rest_framework.validators import UniqueValidator
 from rest_framework.generics import get_object_or_404
-from django.core.validators import EmailValidator, MaxLengthValidator, RegexValidator
+from django.core.validators import EmailValidator, MaxLengthValidator, RegexValidator, MinLengthValidator
+import re
+from rest_framework.response import Response
 
 from reviews.models import User, Category, Genre, Title, Review, Comment
 
@@ -127,19 +129,21 @@ class SignUpSerializer(serializers.ModelSerializer):
             MaxLengthValidator(limit_value=254)],)
     username = serializers.CharField(validators=[UniqueValidator(queryset=User.objects.all()),
             MaxLengthValidator(limit_value=150),
-            RegexValidator(r'^[\w.@+-]+$', code=400),])
+            RegexValidator(r'^[\w.@+-]+$', code=400),
+            MinLengthValidator(limit_value=3)
+            ])
+
+    class Meta:
+        model = User
+        fields = ['email', 'username']
+
     def perform_create(self, serializer):
         serializer.save(username=request.POST.get('username'), email=request.POST.get('email'), is_active=False)
 
     def validate_username(self, data):
-        if not re.fullmatch(data, r'^[\w.@+- ]+$') or len(data)>150 or data:
-            return Response({
-                # "username": request.POST.get('username'),
-                # "email": request.POST.get('email'),
-                # "first_name": request.POST.get("first_name"),
-                # "last_name": request.POST.get("last_name"),
-                # "bio": request.POST.get("bio"),
-            },
+        if not re.fullmatch(data, r'^[\w.@+- ]+$') or 3 > len(data) > 150 or data == ' ':
+            return Response(
+                {},
                 status=401
             )
         return data

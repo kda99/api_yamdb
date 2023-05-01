@@ -38,6 +38,7 @@ class User(AbstractUser):
         max_length=150,
         verbose_name='Фамилия',
     )
+    confirmation_code = models.TextField(max_length=40)
 
     @property
     def is_moderator(self):
