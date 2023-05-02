@@ -18,6 +18,13 @@ from .serializers import (UserSerializer,
                           ReviewSerializer, CommentSerializer,
                           ReadOnlyTitleSerializer, SignUpSerializer, TokenSerializer)
 
+from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import Filter
+from rest_framework.filters import SearchFilter
+
+
+
+
 JWT_SECRET_KEY = settings.SECRET_KEY
 
 
@@ -80,10 +87,14 @@ class CategoryViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminOrReadOnly,)
 
 
+
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (SearchFilter,)
+    search_fields = ('name',)
+
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -91,6 +102,10 @@ class TitleViewSet(viewsets.ModelViewSet):
         rating=Avg('reviews__score'))
     permission_classes = (IsAdminOrReadOnly,)
     pagination_class = LimitOffsetPagination
+    filter_backends = (DjangoFilterBackend,)
+    genre = Filter(field_name='genre__slug')
+
+
 
     def get_serializer_class(self):
         if self.request.method in SAFE_METHODS:
