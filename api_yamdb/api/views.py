@@ -3,20 +3,19 @@ from django.core.mail import send_mail
 from django.conf import settings
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework import permissions, viewsets, status
+from rest_framework import viewsets
 from rest_framework.pagination import (PageNumberPagination,
                                        LimitOffsetPagination)
-from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS, AllowAny
 from rest_framework import mixins
 from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import Category, Genre, Title, Review, User
 from .permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrReadOnly
-from .serializers import (UserSerializer, UserEditSerializer,
-                          CategorySerializer, GenreSerializer, TitleSerializer,
-                          ReviewSerializer, CommentSerializer,
-                          ReadOnlyTitleSerializer, SignUpSerializer)
+from .serializers import (UserSerializer, CategorySerializer, GenreSerializer,
+                          TitleSerializer, ReviewSerializer, CommentSerializer,
+                          ReadOnlyTitleSerializer, SignUpSerializer,
+                          TokenSerializer)
 
 JWT_SECRET_KEY = settings.SECRET_KEY
 
@@ -28,32 +27,29 @@ class UserViewSet(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
     permission_classes = (IsAdmin,)
 
-    # def list(self, request, *args, **kwargs):
-    #     pass
 
-
-    # @action(
-    #     methods=["get", "patch"], detail=False, url_path="me",
-    #     pagination_class=[PageNumberPagination,],
-    #     serializer_class=UserSerializer
-    # )
-    # def user_own_profile(self, request):
-    #     user = request.user
-    #     if request.method == "GET":
-    #         serializer = self.get_serializer(user)
-    #         return Response(serializer.data, status=status.HTTP_200_OK)
-    #     if request.method == "PATCH":
-    #         serializer = self.get_serializer(
-    #             user,
-    #             data=request.data,
-    #             partial=True
-    #         )
-    #         serializer.is_valid(raise_exception=True)
-    #         serializer.seve()
-    #         return Response(serializer.data, status=status.HTTP_200_OK)
-    #     return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-
+'''
+class LoginAPI(APIView):
+    def post(self, request):
+        try:
+            data = request.data
+            serializer = LoginAPISerializer(data = data)
+            if serializer.is_valid():
+                email = serializer.data['email']
+                password = serializer.data['password']
+                user = authenticate(email=email, password=password)
+                if user is not None:
+                    refresh = RefreshToken.for_user(user)
+                    return {
+                        'refresh': str(refresh),
+                        'access': str(refresh.access_token),
+                    }
+            return Response(
+                'status': 400,
+                'message': "Invalid password",
+                'data': {},}
+            )
+'''
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -122,26 +118,10 @@ class SignUpViewSet(viewsets.ViewSet):
     permission_classes = [AllowAny, ]
 
     def create(self, request):
-        # email = request.POST.get('email')
-        # username = request.POST.get('username')
-
         serializer = SignUpSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data.get("email")
         username = serializer.validated_data.get("username")
-
-        # Validate username
-        if username == 'me' or username == ' ':
-            return Response(
-                {'error': 'The use of the name "me" is not allowed.'},
-                status=400)
-
-        # Validate input data
-        if not email or not username:
-            return Response(
-                {'error': 'Email and username are required.'},
-                status=400)
-
         confirmation_code = User.objects.make_random_password(40)
         user = User.objects.create_user(username=username, email=email,
                                         confirmation_code=confirmation_code)
@@ -154,15 +134,17 @@ class SignUpViewSet(viewsets.ViewSet):
             fail_silently=False,
         )
 
-        return Response({"email": email, "username": username}, status=201)
+        return Response({"email": email, "username": username}, status=200)
 
 
-class Token(CreateRetrieveViewSet):
+class TokenViewSet(CreateRetrieveViewSet):
 
     def create(self, request):
-        username = request.POST.get('username')
-        confirmation_code = request.POST.get('confirmation_code')
         user = request.user
+        serializer = TokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        confirmation_code = serializer.validated_data.get("confirmation_code")
+        username = serializer.validated_data.get("username")
         if (username == user.username
                 and confirmation_code == user.confirmation_code):
             token = AccessToken.for_user(user)

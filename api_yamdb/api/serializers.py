@@ -3,9 +3,6 @@ from rest_framework.validators import UniqueValidator
 from rest_framework.generics import get_object_or_404
 from django.core.validators import (EmailValidator, MaxLengthValidator,
                                     RegexValidator, MinLengthValidator)
-import re
-from rest_framework.response import Response
-
 from reviews.models import User, Category, Genre, Title, Review, Comment
 
 
@@ -33,13 +30,6 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = User
-
-
-class UserEditSerializer(serializers.ModelSerializer):
-    class Meta:
-        fields = '__all__'
-        model = User
-        read_only_fields = ('role',)
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -134,18 +124,21 @@ class SignUpSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email', 'username']
+        fields = ['username', 'email']
 
-    def perform_create(self, serializer):
-        request = self.context['request']
-        serializer.save(username=request.POST.get('username'),
-                        email=request.POST.get('email'), is_active=False)
+    # def validate_username(self, data):
+    #     if not re.fullmatch(data, r'^[\w.@+-]+$') or len(data) > 150:
+    #         return Response(
+    #             {},
+    #             status=401
+    #         )
+    #     return data
 
-    def validate_username(self, data):
-        if (not re.fullmatch(data, r'^[\w.@+- ]+$')
-                or 3 > len(data) > 150 or data == ' '):
-            return Response(
-                {},
-                status=401
-            )
-        return data
+
+class TokenSerializer(serializers.ModelSerializer):
+    username = serializers.CharField()
+    confirmation_code = serializers.CharField()
+
+    class Meta:
+        model = User
+        fields = ['confirmation_code', 'username']
