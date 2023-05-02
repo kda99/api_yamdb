@@ -9,9 +9,6 @@ from rest_framework.response import Response
 from reviews.models import User, Category, Genre, Title, Review, Comment
 
 
-# def validate_
-
-
 class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         max_length=150,
