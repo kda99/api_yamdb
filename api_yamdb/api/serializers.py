@@ -1,9 +1,8 @@
-from contextvars import Token
-
 from rest_framework import serializers, exceptions
 from rest_framework.validators import UniqueValidator
 from rest_framework.generics import get_object_or_404
-from django.core.validators import EmailValidator, MaxLengthValidator, RegexValidator, MinLengthValidator
+from django.core.validators import (EmailValidator, MaxLengthValidator,
+                                    RegexValidator, MinLengthValidator)
 import re
 from rest_framework.response import Response
 
@@ -80,7 +79,6 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Review
-        read_only_fields = ('title',)
 
 
 class LoginAPISerializer(serializers.Serializer):
@@ -101,13 +99,13 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class ReadOnlyTitleSerializer(serializers.ModelSerializer):
-    genre = GenreSerializer(many=True)
-    category = CategorySerializer()
+    rating = serializers.IntegerField(read_only=True)
+    genre = GenreSerializer(many=True, read_only=True)
+    category = CategorySerializer(read_only=True)
 
     class Meta:
         model = Title
         fields = '__all__'
-        read_only_fields = '__all__'
 
 
 class TitleSerializer(serializers.ModelSerializer):
@@ -124,33 +122,33 @@ class TitleSerializer(serializers.ModelSerializer):
 
 
 class SignUpSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(validators=[UniqueValidator(queryset=User.objects.all()),
+    email = serializers.EmailField(
+        validators=[
+            UniqueValidator(queryset=User.objects.all()),
             EmailValidator(code=400),
             MaxLengthValidator(limit_value=254)],)
-    username = serializers.CharField(validators=[UniqueValidator(queryset=User.objects.all()),
+    username = serializers.CharField(
+        validators=[
+            UniqueValidator(queryset=User.objects.all()),
             MaxLengthValidator(limit_value=150),
             RegexValidator(r'^[\w.@+-]+$', code=400),
             MinLengthValidator(limit_value=3)
-            ])
+        ])
 
     class Meta:
         model = User
-        fields = ['username', 'email']
+        fields = ['email', 'username']
 
-    # def validate_username(self, data):
-    #     if not re.fullmatch(data, r'^[\w.@+-]+$') or len(data) > 150:
-    #         return Response(
-    #             {},
-    #             status=401
-    #         )
-    #     return data
+    def perform_create(self, serializer):
+        request = self.context['request']
+        serializer.save(username=request.POST.get('username'),
+                        email=request.POST.get('email'), is_active=False)
 
-
-class TokenSerializer(serializers.ModelSerializer):
-    username = serializers.CharField()
-    confirmation_code = serializers.CharField()
-
-    class Meta:
-        model = User
-        fields = ['confirmation_code', 'username']
-
+    def validate_username(self, data):
+        if (not re.fullmatch(data, r'^[\w.@+- ]+$')
+                or 3 > len(data) > 150 or data == ' '):
+            return Response(
+                {},
+                status=401
+            )
+        return data

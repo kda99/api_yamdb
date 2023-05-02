@@ -135,11 +135,6 @@ class Title(models.Model):
         default='Жанр',
         through='GenreTitle'
     )
-    rating = models.IntegerField(
-        verbose_name='Рейтинг',
-        null=True,
-        default=None
-    )
 
     class Meta:
         ordering = ('name',)
@@ -209,6 +204,7 @@ class Comment(models.Model):
         return '"{}" to review "{}" by author "{}"'.format(
             self.text, self.review, self.author
         )
+
 
 class GenreTitle(models.Model):
     """Модель взаимосвязи жанров и произведений"""
