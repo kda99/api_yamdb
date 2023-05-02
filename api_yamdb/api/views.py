@@ -10,19 +10,17 @@ from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS, AllowAny
 from rest_framework import mixins
 from rest_framework_simplejwt.tokens import AccessToken
+from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import Filter
+from rest_framework.filters import SearchFilter
 
 from reviews.models import Category, Genre, Title, Review, User
 from .permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrReadOnly
 from .serializers import (UserSerializer,
                           CategorySerializer, GenreSerializer, TitleSerializer,
                           ReviewSerializer, CommentSerializer,
-                          ReadOnlyTitleSerializer, SignUpSerializer, TokenSerializer)
-
-from django_filters.rest_framework import DjangoFilterBackend
-from django_filters.rest_framework import Filter
-from rest_framework.filters import SearchFilter
-
-
+                          ReadOnlyTitleSerializer, SignUpSerializer,
+                          TokenSerializer, UserEditSerializer)
 
 
 JWT_SECRET_KEY = settings.SECRET_KEY
@@ -36,11 +34,13 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdmin,)
 
     @action(
-        methods=["get", "patch"], detail=False, url_path="me",
-        pagination_class=[permissions.IsAuthenticated],
-        serializer_class=UserSerializer
+        methods=['GET', 'PATCH'],
+        detail=False,
+        url_path='me',
+        permission_classes=[permissions.IsAuthenticated],
+        serializer_class=UserEditSerializer,
     )
-    def user_own_profile(self, request):
+    def users_own_profile(self, request):
         user = request.user
         if request.method == "GET":
             serializer = self.get_serializer(user)
@@ -52,7 +52,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 partial=True
             )
             serializer.is_valid(raise_exception=True)
-            serializer.seve()
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
@@ -87,14 +87,12 @@ class CategoryViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminOrReadOnly,)
 
 
-
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
-
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -104,8 +102,6 @@ class TitleViewSet(viewsets.ModelViewSet):
     pagination_class = LimitOffsetPagination
     filter_backends = (DjangoFilterBackend,)
     genre = Filter(field_name='genre__slug')
-
-
 
     def get_serializer_class(self):
         if self.request.method in SAFE_METHODS:
@@ -152,7 +148,7 @@ class CreateRetrieveViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
 
 class SignUpViewSet(viewsets.ViewSet):
     serializer_class = SignUpSerializer
-    permission_classes = [AllowAny,]
+    permission_classes = [AllowAny, ]
 
     def create(self, request):
         serializer = SignUpSerializer(data=request.data)
@@ -182,10 +178,9 @@ class TokenViewSet(CreateRetrieveViewSet):
         serializer.is_valid(raise_exception=True)
         confirmation_code = serializer.validated_data.get("confirmation_code")
         username = serializer.validated_data.get("username")
-        if username == user.username and confirmation_code == user.confirmation_code:
+        if (username == user.username
+                and confirmation_code == user.confirmation_code):
             token = AccessToken.for_user(user)
             return Response({"token": token}, status=200)
         else:
             return Response({}, status=400)
-
-# изменения для пуша
