@@ -22,7 +22,7 @@ from .serializers import (UserSerializer, UserEditSerializer,
                           LoginAPISerializer, CategorySerializer,
                           GenreSerializer, TitleSerializer,
                           ReviewSerializer, CommentSerializer,
-                          ReadOnlyTitleSerializer, SignUpSerializer)
+                          ReadOnlyTitleSerializer, SignUpSerializer, TokenSerializer)
 
 JWT_SECRET_KEY = settings.SECRET_KEY
 
@@ -146,24 +146,11 @@ class SignUpViewSet(viewsets.ViewSet):
     serializer_class = SignUpSerializer
     permission_classes = [AllowAny,]
 
-
-
     def create(self, request):
-        # email = request.POST.get('email')
-        # username = request.POST.get('username')
-
         serializer = SignUpSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data.get("email")
         username = serializer.validated_data.get("username")
-
-        # Validate username
-        if username == 'me' or username == ' ':
-            return Response({'error': 'The use of the name "me" is not allowed.'}, status=400)
-
-        # Validate input data
-        if not email or not username:
-            return Response({'error': 'Email and username are required.'}, status=400)
 
         confirmation_code = User.objects.make_random_password(40)
         user = User.objects.create_user(username=username, email=email, confirmation_code=confirmation_code)
@@ -176,14 +163,16 @@ class SignUpViewSet(viewsets.ViewSet):
             fail_silently=False,
         )
 
-        return Response({"email": email, "username": username}, status=201)
+        return Response({"email": email, "username": username}, status=200)
 
-class Token(CreateRetrieveViewSet):
+class TokenViewSet(CreateRetrieveViewSet):
 
     def create(self, request):
-        username = request.POST.get('username')
-        confirmation_code = request.POST.get('confirmation_code')
         user = request.user
+        serializer = TokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        confirmation_code = serializer.validated_data.get("confirmation_code")
+        username = serializer.validated_data.get("username")
         if username == user.username and confirmation_code == user.confirmation_code:
             token = AccessToken.for_user(user)
             return Response({"token": token}, status=200)

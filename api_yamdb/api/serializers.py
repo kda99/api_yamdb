@@ -1,3 +1,5 @@
+from contextvars import Token
+
 from rest_framework import serializers, exceptions
 from rest_framework.validators import UniqueValidator
 from rest_framework.generics import get_object_or_404
@@ -135,16 +137,22 @@ class SignUpSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email', 'username']
+        fields = ['username', 'email']
 
-    def perform_create(self, serializer):
-        serializer.save(username=request.POST.get('username'), email=request.POST.get('email'), is_active=False)
+    # def validate_username(self, data):
+    #     if not re.fullmatch(data, r'^[\w.@+-]+$') or len(data) > 150:
+    #         return Response(
+    #             {},
+    #             status=401
+    #         )
+    #     return data
 
-    def validate_username(self, data):
-        if not re.fullmatch(data, r'^[\w.@+- ]+$') or 3 > len(data) > 150 or data == ' ':
-            return Response(
-                {},
-                status=401
-            )
-        return data
+
+class TokenSerializer(serializers.ModelSerializer):
+    username = serializers.CharField()
+    confirmation_code = serializers.CharField()
+
+    class Meta:
+        model = User
+        fields = ['confirmation_code', 'username']
 
