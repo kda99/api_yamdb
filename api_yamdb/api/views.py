@@ -28,6 +28,8 @@ class UserViewSet(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
     permission_classes = (IsAdmin,)
 
+    # def list(self, request, *args, **kwargs):
+    #     pass
 
 
     # @action(
