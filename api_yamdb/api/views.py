@@ -28,50 +28,30 @@ class UserViewSet(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
     permission_classes = (IsAdmin,)
 
-    @action(
-        methods=["get", "patch"], detail=False, url_path="me",
-        pagination_class=[permissions.IsAuthenticated],
-        serializer_class=UserEditSerializer
-    )
-    def user_own_profile(self, request):
-        user = request.user
-        if request.method == "GET":
-            serializer = self.get_serializer(user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        if request.method == "PATCH":
-            serializer = self.get_serializer(
-                user,
-                data=request.data,
-                partial=True
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.seve()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
-'''
-class LoginAPI(APIView):
-    def post(self, request):
-        try:
-            data = request.data
-            serializer = LoginAPISerializer(data = data)
-            if serializer.is_valid():
-                email = serializer.data['email']
-                password = serializer.data['password']
-                user = authenticate(email=email, password=password)
-                if user is not None:
-                    refresh = RefreshToken.for_user(user)
-                    return {
-                        'refresh': str(refresh),
-                        'access': str(refresh.access_token),
-                    }
-            return Response(
-                'status': 400,
-                'message': "Invalid password",
-                'data': {},}
-            )
-'''
+    # @action(
+    #     methods=["get", "patch"], detail=False, url_path="me",
+    #     pagination_class=[PageNumberPagination,],
+    #     serializer_class=UserSerializer
+    # )
+    # def user_own_profile(self, request):
+    #     user = request.user
+    #     if request.method == "GET":
+    #         serializer = self.get_serializer(user)
+    #         return Response(serializer.data, status=status.HTTP_200_OK)
+    #     if request.method == "PATCH":
+    #         serializer = self.get_serializer(
+    #             user,
+    #             data=request.data,
+    #             partial=True
+    #         )
+    #         serializer.is_valid(raise_exception=True)
+    #         serializer.seve()
+    #         return Response(serializer.data, status=status.HTTP_200_OK)
+    #     return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
