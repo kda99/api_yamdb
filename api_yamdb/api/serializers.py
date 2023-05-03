@@ -6,28 +6,67 @@ from django.core.validators import (EmailValidator, MaxLengthValidator,
 from reviews.models import User, Category, Genre, Title, Review, Comment
 
 
+# class UserSerializer(serializers.ModelSerializer):
+#     username = serializers.CharField(
+#         max_length=150,
+#         validators=[
+#             UniqueValidator(queryset=User.objects.all()),
+#             MaxLengthValidator(limit_value=150),
+#             RegexValidator(r'^[\w.@+-]+$', code=400),
+#         ],
+#         required=True,
+#     )
+#     email = serializers.EmailField(
+#         max_length=254,
+#         validators=[
+#             UniqueValidator(queryset=User.objects.all()),
+#             EmailValidator(code=400),
+#             MaxLengthValidator(limit_value=254),
+#         ],
+#         required=True,
+#     )
+#     class Meta:
+#         fields = '__all__'
+#         model = User
+
+
 class UserSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(
-        max_length=150,
-        validators=[
-            UniqueValidator(queryset=User.objects.all()),
-            MaxLengthValidator(limit_value=150),
-            RegexValidator(r'^[\w.@+-]+$', code=400),
-        ],
-        required=True,
-    )
-    email = serializers.EmailField(
-        max_length=254,
-        validators=[
-            UniqueValidator(queryset=User.objects.all()),
-            EmailValidator(code=400),
-            MaxLengthValidator(limit_value=254),
-        ],
-        required=True,
-    )
     class Meta:
-        fields = '__all__'
+        fields = ('username', 'email', 'first_name',
+                  'last_name', 'bio', 'role')
+        read_only_fields = ('role',)
         model = User
+
+
+class AdminSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ('username', 'email', 'first_name',
+                  'last_name', 'bio', 'role')
+        model = User
+
+
+class SignupSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(max_length=254, required=True)
+    username = serializers.RegexField(regex=r'^[\w.@+-]+$',
+                                      max_length=150,
+                                      required=True)
+
+    class Meta:
+        fields = ('email', 'username')
+        model = User
+
+    def validate(self, data):
+        if data['username'].lower() == 'me':
+            raise serializers.ValidationError(
+                {"username": ["Нельзя использовать данное имя"]}
+            )
+        return data
+
+
+class TokenSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    confirmation_code = serializers.CharField()
+
 
 
 class UserEditSerializer(serializers.ModelSerializer):
@@ -114,37 +153,76 @@ class TitleSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+# class SignUpSerializer(serializers.ModelSerializer):
+#     email = serializers.EmailField(
+#         validators=[
+#             UniqueValidator(queryset=User.objects.all()),
+#             EmailValidator(code=400),
+#             MaxLengthValidator(limit_value=254)],)
+#     username = serializers.CharField(
+#         validators=[
+#             UniqueValidator(queryset=User.objects.all()),
+#             MaxLengthValidator(limit_value=150),
+#             RegexValidator(r'^[\w.@+-]+$', code=400),
+#             MinLengthValidator(limit_value=3)
+#         ])
+#
+#     class Meta:
+#         model = User
+#         fields = ['username', 'email']
+#
+#     # def validate_username(self, data):
+#     #     if not re.fullmatch(data, r'^[\w.@+-]+$') or len(data) > 150:
+#     #         return Response(
+#     #             {},
+#     #             status=401
+#     #         )
+#     #     return data
+#
+#
+# class TokenSerializer(serializers.ModelSerializer):
+#     username = serializers.CharField()
+#     confirmation_code = serializers.CharField()
+#
+#     class Meta:
+#         model = User
+#         fields = '__all__'
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ('username', 'email', 'first_name',
+                  'last_name', 'bio', 'role')
+        read_only_fields = ('role',)
+        model = User
+
+
+class AdminSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ('username', 'email', 'first_name',
+                  'last_name', 'bio', 'role')
+        model = User
+
+
 class SignUpSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(
-        validators=[
-            UniqueValidator(queryset=User.objects.all()),
-            EmailValidator(code=400),
-            MaxLengthValidator(limit_value=254)],)
-    username = serializers.CharField(
-        validators=[
-            UniqueValidator(queryset=User.objects.all()),
-            MaxLengthValidator(limit_value=150),
-            RegexValidator(r'^[\w.@+-]+$', code=400),
-            MinLengthValidator(limit_value=3)
-        ])
+    email = serializers.EmailField(max_length=254, required=True)
+    username = serializers.RegexField(regex=r'^[\w.@+-]+$',
+                                      max_length=150,
+                                      required=True)
 
     class Meta:
+        fields = ('email', 'username')
         model = User
-        fields = ['username', 'email']
 
-    # def validate_username(self, data):
-    #     if not re.fullmatch(data, r'^[\w.@+-]+$') or len(data) > 150:
-    #         return Response(
-    #             {},
-    #             status=401
-    #         )
-    #     return data
+    def validate(self, data):
+        if data['username'].lower() == 'me':
+            raise serializers.ValidationError(
+                {"username": ["Нельзя использовать данное имя"]}
+            )
+        return data
 
 
-class TokenSerializer(serializers.ModelSerializer):
+class TokenSerializer(serializers.Serializer):
     username = serializers.CharField()
     confirmation_code = serializers.CharField()
 
-    class Meta:
-        model = User
-        fields = '__all__'

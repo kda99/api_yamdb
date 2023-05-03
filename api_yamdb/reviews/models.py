@@ -3,62 +3,98 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 
-class User(AbstractUser):
-    ADMIN = 'admin'
-    MODERATOR = 'moderator'
-    USER = 'user'
-    ROLS = ((ADMIN, 'admin'),
-            (MODERATOR, 'moderator'),
-            (USER, 'user'))
-    email = models.EmailField(
-        max_length=254,
-        verbose_name='Эл. почта',
-        unique=True,)
-    username = models.TextField(
-        max_length=150,
-        verbose_name='Имя пользователя',
-        unique=True)
-    role = models.CharField(
-        max_length=25,
-        verbose_name='Права пользователя',
-        choices=ROLS,
-        default=USER,)
-    bio = models.TextField(
-        verbose_name='О себе',
-        null=True,
-        blank=True,)
-    first_name = models.TextField(
-        max_length=150,
-        verbose_name='Имя',
-    )
-    last_name = models.TextField(
-        max_length=150,
-        verbose_name='Фамилия',
-    )
-    confirmation_code = models.TextField(max_length=40, default='null')
+# class User(AbstractUser):
+#     ADMIN = 'admin'
+#     MODERATOR = 'moderator'
+#     USER = 'user'
+#     ROLS = ((ADMIN, 'admin'),
+#             (MODERATOR, 'moderator'),
+#             (USER, 'user'))
+#     email = models.EmailField(
+#         max_length=254,
+#         verbose_name='Эл. почта',
+#         unique=True,)
+#     username = models.TextField(
+#         max_length=150,
+#         verbose_name='Имя пользователя',
+#         unique=True)
+#     role = models.CharField(
+#         max_length=25,
+#         verbose_name='Права пользователя',
+#         choices=ROLS,
+#         default=USER,)
+#     bio = models.TextField(
+#         verbose_name='О себе',
+#         null=True,
+#         blank=True,)
+#     first_name = models.TextField(
+#         max_length=150,
+#         verbose_name='Имя',
+#     )
+#     last_name = models.TextField(
+#         max_length=150,
+#         verbose_name='Фамилия',
+#     )
+#     confirmation_code = models.TextField(max_length=40, default='null')
+#
+#     @property
+#     def is_moderator(self):
+#         return self.role == self.MODERATOR
+#
+#     @property
+#     def is_admin(self):
+#         return self.role == self.ADMIN
+#
+#     USERNAME_FIELD = 'email'
+#     REQUIRED_FIELDS = ['username']
+#
+#     class Meta:
+#         ordering = ('id',)
+#         verbose_name = 'Пользователь'
+#         verbose_name_plural = 'Пользователи'
+#
+#         constraints = [
+#             models.CheckConstraint(
+#                 check=~models.Q(username__iexact='me'),
+#                 name='username_is_not_me'
+#             )
+#         ]
 
-    @property
-    def is_moderator(self):
-        return self.role == self.MODERATOR
+
+class User(AbstractUser):
+
+    USER = 'user'
+    MODERATOR = 'moderator'
+    ADMIN = 'admin'
+
+    CHOICES = (
+        (USER, 'Пользователь'),
+        (MODERATOR, 'Модератор'),
+        (ADMIN, 'Администратор'),
+    )
+    password = models.CharField(max_length=128,
+                                verbose_name='password',
+                                blank=True)
+    groups = None
+    user_permissions = None
+    email = models.EmailField(max_length=254, unique=True)
+    bio = models.TextField(blank=True)
+    role = models.SlugField(choices=CHOICES, default=USER)
 
     @property
     def is_admin(self):
-        return self.role == self.ADMIN
+        return self.role == User.ADMIN
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    @property
+    def is_moderator(self):
+        return self.role == User.MODERATOR
 
-    class Meta:
-        ordering = ('id',)
-        verbose_name = 'Пользователь'
-        verbose_name_plural = 'Пользователи'
+    @property
+    def is_user(self):
+        return self.role == User.USER
 
-        constraints = [
-            models.CheckConstraint(
-                check=~models.Q(username__iexact='me'),
-                name='username_is_not_me'
-            )
-        ]
+    def __str__(self):
+        return self.username
 
 
 class Category(models.Model):
