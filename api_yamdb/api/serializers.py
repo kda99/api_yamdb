@@ -13,7 +13,6 @@ class UserSerializer(serializers.ModelSerializer):
             UniqueValidator(queryset=User.objects.all()),
             MaxLengthValidator(limit_value=150),
             RegexValidator(r'^[\w.@+-]+$', code=400),
-
         ],
         required=True,
     )
@@ -26,7 +25,6 @@ class UserSerializer(serializers.ModelSerializer):
         ],
         required=True,
     )
-
     class Meta:
         fields = '__all__'
         model = User
@@ -149,4 +147,4 @@ class TokenSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['confirmation_code', 'username']
+        fields = '__all__'

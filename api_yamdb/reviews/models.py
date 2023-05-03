@@ -7,29 +7,26 @@ class User(AbstractUser):
     ADMIN = 'admin'
     MODERATOR = 'moderator'
     USER = 'user'
-    ROLS = ((ADMIN, 'admin'), (MODERATOR, 'moderator'), (USER, 'user'))
-
+    ROLS = ((ADMIN, 'admin'),
+            (MODERATOR, 'moderator'),
+            (USER, 'user'))
     email = models.EmailField(
         max_length=254,
         verbose_name='Эл. почта',
-        unique=True,
-    )
+        unique=True,)
     username = models.TextField(
         max_length=150,
         verbose_name='Имя пользователя',
-        unique=True
-    )
+        unique=True)
     role = models.CharField(
         max_length=25,
         verbose_name='Права пользователя',
         choices=ROLS,
-        default=USER,
-    )
+        default=USER,)
     bio = models.TextField(
         verbose_name='О себе',
         null=True,
-        blank=True,
-    )
+        blank=True,)
     first_name = models.TextField(
         max_length=150,
         verbose_name='Имя',
