@@ -5,15 +5,17 @@ from django.conf import settings
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import permissions, viewsets, status, filters
-from rest_framework.pagination import (LimitOffsetPagination, PageNumberPagination)
+from rest_framework.pagination import (LimitOffsetPagination,
+                                       PageNumberPagination)
 from rest_framework.decorators import action, permission_classes, api_view
 from rest_framework.permissions import SAFE_METHODS, AllowAny, IsAuthenticated
 from rest_framework import mixins
-from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.db.utils import IntegrityError
 
 from reviews.models import Category, Genre, Title, Review, User
-from .permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrReadOnly, IsAdminOrSuperUser
+from .permissions import (IsAdmin, IsAdminOrReadOnly, IsAuthorOrReadOnly,
+                          IsAdminOrSuperUser)
 from .serializers import (UserSerializer,
                           CategorySerializer, GenreSerializer, TitleSerializer,
                           ReviewSerializer, CommentSerializer,
@@ -53,30 +55,6 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-
-'''
-class LoginAPI(APIView):
-    def post(self, request):
-        try:
-            data = request.data
-            serializer = LoginAPISerializer(data = data)
-            if serializer.is_valid():
-                email = serializer.data['email']
-                password = serializer.data['password']
-                user = authenticate(email=email, password=password)
-                if user is not None:
-                    refresh = RefreshToken.for_user(user)
-                    return {
-                        'refresh': str(refresh),
-                        'access': str(refresh.access_token),
-                    }
-            return Response(
-                'status': 400,
-                'message': "Invalid password",
-                'data': {},}
-            )
-'''
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -133,51 +111,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 class CreateRetrieveViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     pass
-#
-#
-# class SignUp(CreateRetrieveViewSet):
-#     queryset = User.objects.all()
-#     serializer_class = UserSerializer
 
-
-# class SignUpViewSet(viewsets.ViewSet):
-#     serializer_class = SignUpSerializer
-#     permission_classes = [AllowAny, ]
-#
-#     def create(self, request):
-#         serializer = SignUpSerializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         email = serializer.validated_data.get("email")
-#         username = serializer.validated_data.get("username")
-#         confirmation_code = User.objects.make_random_password(40)
-#         user = User.objects.create_user(username=username, email=email,
-#                                         confirmation_code=confirmation_code)
-#
-#         send_mail(
-#             'Confirmation code for YaMDB',
-#             f'Your confirmation code for YaMDB is {confirmation_code}',
-#             'from@example.com',
-#             [user.email],
-#             fail_silently=False,
-#         )
-#
-#         return Response({"email": email, "username": username}, status=200)
-#
-#
-# class TokenViewSet(CreateRetrieveViewSet):
-#
-#     def create(self, request):
-#         user = request.user
-#         serializer = TokenSerializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         confirmation_code = serializer.validated_data.get("confirmation_code")
-#         username = serializer.validated_data.get("username")
-#         if (username == user.username
-#                 and confirmation_code == user.confirmation_code):
-#             token = AccessToken.for_user(user)
-#             return Response({"token": token}, status=200)
-#         else:
-#             return Response({}, status=400)
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()

@@ -1,33 +1,6 @@
 from rest_framework import serializers, exceptions
-from rest_framework.validators import UniqueValidator
 from rest_framework.generics import get_object_or_404
-from django.core.validators import (EmailValidator, MaxLengthValidator,
-                                    RegexValidator, MinLengthValidator)
 from reviews.models import User, Category, Genre, Title, Review, Comment
-
-
-# class UserSerializer(serializers.ModelSerializer):
-#     username = serializers.CharField(
-#         max_length=150,
-#         validators=[
-#             UniqueValidator(queryset=User.objects.all()),
-#             MaxLengthValidator(limit_value=150),
-#             RegexValidator(r'^[\w.@+-]+$', code=400),
-#         ],
-#         required=True,
-#     )
-#     email = serializers.EmailField(
-#         max_length=254,
-#         validators=[
-#             UniqueValidator(queryset=User.objects.all()),
-#             EmailValidator(code=400),
-#             MaxLengthValidator(limit_value=254),
-#         ],
-#         required=True,
-#     )
-#     class Meta:
-#         fields = '__all__'
-#         model = User
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -66,7 +39,6 @@ class SignupSerializer(serializers.ModelSerializer):
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField()
     confirmation_code = serializers.CharField()
-
 
 
 class UserEditSerializer(serializers.ModelSerializer):
@@ -225,4 +197,3 @@ class SignUpSerializer(serializers.ModelSerializer):
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField()
     confirmation_code = serializers.CharField()
-
