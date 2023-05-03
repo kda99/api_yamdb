@@ -3,17 +3,19 @@ from django.core.mail import send_mail
 from django.conf import settings
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework import viewsets
-from rest_framework.pagination import (PageNumberPagination,
-                                       LimitOffsetPagination)
+from rest_framework import permissions, viewsets, status
+from rest_framework.pagination import (LimitOffsetPagination)
+from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS, AllowAny
 from rest_framework import mixins
 from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import Category, Genre, Title, Review, User
 from .permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrReadOnly
-from .serializers import (UserSerializer, CategorySerializer, GenreSerializer,
-                          TitleSerializer, ReviewSerializer, CommentSerializer,
+from .serializers import (UserSerializer,
+                          CategorySerializer, GenreSerializer, TitleSerializer,
+                          ReviewSerializer, CommentSerializer,
+                          UserEditSerializer,
                           ReadOnlyTitleSerializer, SignUpSerializer,
                           TokenSerializer)
 
@@ -28,11 +30,34 @@ JWT_SECRET_KEY = settings.SECRET_KEY
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    lookup_field = "username"
+    lookup_field = 'username'
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    pagination_class = PageNumberPagination
     permission_classes = (IsAdmin,)
+    search_fields = ('username', )
+
+    @action(
+        methods=['GET', 'PATCH'],
+        detail=False,
+        url_path='me',
+        permission_classes=[permissions.IsAuthenticated],
+        serializer_class=UserEditSerializer,
+    )
+    def users_own_profile(self, request):
+        user = request.user
+        if request.method == "GET":
+            serializer = self.get_serializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        if request.method == "PATCH":
+            serializer = self.get_serializer(
+                user,
+                data=request.data,
+                partial=True
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 '''
