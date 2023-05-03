@@ -183,7 +183,6 @@ class Comment(models.Model):
 
 class GenreTitle(models.Model):
     """Модель взаимосвязи жанров и произведений"""
-
     genre = models.ForeignKey(
         Genre,
         on_delete=models.CASCADE
