@@ -5,7 +5,7 @@ from django.conf import settings
 from django.db.utils import IntegrityError
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework import viewsets, status, filters
+from rest_framework import viewsets, status, filters, mixins
 from rest_framework.pagination import (LimitOffsetPagination,
                                        PageNumberPagination)
 from rest_framework.decorators import action, permission_classes, api_view
@@ -23,14 +23,16 @@ from .serializers import (UserSerializer, CategorySerializer, GenreSerializer,
 import django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
+from django_filters.rest_framework import Filter
+
 
 
 JWT_SECRET_KEY = settings.SECRET_KEY
 
 
 class TitleFilter(django_filters.FilterSet):
-    genre__slug = django_filters.CharFilter()
-    category__slug = django_filters.CharFilter()
+    category = Filter(field_name='category__slug')
+    genre = Filter(field_name='genre__slug')
     year = django_filters.NumberFilter()
     name = django_filters.CharFilter()
 
@@ -39,22 +41,50 @@ class TitleFilter(django_filters.FilterSet):
         fields = '__all__'
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class CategoryViewSet(mixins.CreateModelMixin,
+                               mixins.ListModelMixin,
+                               mixins.DestroyModelMixin,
+                               viewsets.GenericViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
-    filterset_fields = ('name',)
+    # filterset_fields = ('name','slug',)
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
+    lookup_field = 'slug'
 
 
-class GenreViewSet(viewsets.ModelViewSet):
+class GenreViewSet(mixins.CreateModelMixin,
+                               mixins.ListModelMixin,
+                               mixins.DestroyModelMixin,
+                               viewsets.GenericViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
-    filterset_fields = ('name',)
+    # filterset_fields = ('name','slug',)
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
+    lookup_field = 'slug'
+
+
+'''
+class CategoryViewSet(CreateListDestroyViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [IsAdminOrSuperUserOrReadOnly]
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+    lookup_field = 'slug'
+
+
+class GenreViewSet(CreateListDestroyViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    permission_classes = [IsAdminOrSuperUserOrReadOnly]
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+    lookup_field = 'slug'
+'''
 
 
 class TitleViewSet(viewsets.ModelViewSet):
