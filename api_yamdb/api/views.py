@@ -15,9 +15,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from reviews.models import Category, Genre, Title, Review, User
 from .permissions import (IsAdminOrReadOnly, IsAuthorOrReadOnly,
                           IsAdminOrSuperUser)
-from .serializers import (UserSerializer,
-                          CategorySerializer, GenreSerializer, TitleSerializer,
-                          ReviewSerializer, CommentSerializer,
+from .serializers import (UserSerializer, CategorySerializer, GenreSerializer,
+                          TitleSerializer, ReviewSerializer, CommentSerializer,
                           ReadOnlyTitleSerializer, SignUpSerializer,
                           TokenSerializer, AdminSerializer,)
 
