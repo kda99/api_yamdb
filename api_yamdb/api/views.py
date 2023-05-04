@@ -20,6 +20,7 @@ from .serializers import (UserSerializer, CategorySerializer, GenreSerializer,
 import django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
+from django_filters.rest_framework import Filter
 
 
 
@@ -59,8 +60,8 @@ class LoginAPI(APIView):
 
 
 class TitleFilter(django_filters.FilterSet):
-    genre__slug = django_filters.CharFilter()
-    category__slug = django_filters.CharFilter()
+    category = Filter(field_name='category__slug')
+    genre = Filter(field_name='genre__slug')
     year = django_filters.NumberFilter()
     name = django_filters.CharFilter()
 
@@ -73,18 +74,18 @@ class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
-    filterset_fields = ('name',)
+    filterset_fields = ('name','slug',)
     filter_backends = (SearchFilter,)
-    search_fields = ('name',)
+    search_fields = ('name','slug',)
 
 
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
-    filterset_fields = ('name',)
+    filterset_fields = ('name','slug',)
     filter_backends = (SearchFilter,)
-    search_fields = ('name',)
+    search_fields = ('name','slug',)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
