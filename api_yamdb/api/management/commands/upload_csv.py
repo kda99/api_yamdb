@@ -70,7 +70,7 @@ class Command(BaseCommand):
                 last_name=row['last_name'],
             )
             user.save()
-        
+
         for row in DictReader(
                 open('static/data/genre_title.csv',
                      encoding='utf-8')):
