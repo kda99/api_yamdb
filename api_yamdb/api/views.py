@@ -2,59 +2,26 @@ from django.contrib.auth.tokens import default_token_generator
 from django.db.models import Avg
 from django.core.mail import send_mail
 from django.conf import settings
+from django.db.utils import IntegrityError
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework import permissions, viewsets, status, filters
+from rest_framework import viewsets, status, filters
 from rest_framework.pagination import (LimitOffsetPagination,
                                        PageNumberPagination)
 from rest_framework.decorators import action, permission_classes, api_view
 from rest_framework.permissions import SAFE_METHODS, AllowAny, IsAuthenticated
-from rest_framework import mixins
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.db.utils import IntegrityError
 
 from reviews.models import Category, Genre, Title, Review, User
-from .permissions import (IsAdmin, IsAdminOrReadOnly, IsAuthorOrReadOnly,
+from .permissions import (IsAdminOrReadOnly, IsAuthorOrReadOnly,
                           IsAdminOrSuperUser)
 from .serializers import (UserSerializer,
                           CategorySerializer, GenreSerializer, TitleSerializer,
                           ReviewSerializer, CommentSerializer,
-                          UserEditSerializer,
                           ReadOnlyTitleSerializer, SignUpSerializer,
                           TokenSerializer, AdminSerializer,)
 
 JWT_SECRET_KEY = settings.SECRET_KEY
-
-
-class UserViewSet(viewsets.ModelViewSet):
-    lookup_field = 'username'
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = (IsAdmin,)
-    search_fields = ('username', )
-
-    @action(
-        methods=['GET', 'PATCH'],
-        detail=False,
-        url_path='me',
-        permission_classes=[permissions.IsAuthenticated],
-        serializer_class=UserEditSerializer,
-    )
-    def users_own_profile(self, request):
-        user = request.user
-        if request.method == "GET":
-            serializer = self.get_serializer(user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        if request.method == "PATCH":
-            serializer = self.get_serializer(
-                user,
-                data=request.data,
-                partial=True
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -107,10 +74,6 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, review=self.get_review())
-
-
-class CreateRetrieveViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
-    pass
 
 
 class UserViewSet(viewsets.ModelViewSet):

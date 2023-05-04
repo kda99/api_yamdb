@@ -26,14 +26,8 @@ class IsAuthorOrReadOnly(BasePermission):
         )
 
 
-class IsAdmin(BasePermission):
-    """Разрешения для админа и суперюзера."""
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and (
-            request.user.is_admin or request.user.is_superuser)
-
-
 class IsAdminOrSuperUser(BasePermission):
+    """Разрешения для админа и суперюзера."""
     def has_permission(self, request, view):
         return request.user.is_authenticated and (
             request.user.is_admin
