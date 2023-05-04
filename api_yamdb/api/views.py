@@ -150,7 +150,7 @@ def signup(request):
     confirmation_code = default_token_generator.make_token(user)
     email = user.email
     send_mail(
-        'Helloy',
+        'Hello!',
         f' Ваш код подтверждения: {confirmation_code}',
         0,
         [f'{email}'],
