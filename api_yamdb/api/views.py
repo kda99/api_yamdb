@@ -3,24 +3,24 @@ from django.core.mail import send_mail
 from django.conf import settings
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework import permissions, viewsets, status
+from rest_framework import viewsets
 from rest_framework.pagination import (PageNumberPagination,
                                        LimitOffsetPagination)
-from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS, AllowAny
 from rest_framework import mixins
 from rest_framework_simplejwt.tokens import AccessToken
-from django_filters.rest_framework import DjangoFilterBackend
-from django_filters.rest_framework import Filter
-from rest_framework.filters import SearchFilter
 
 from reviews.models import Category, Genre, Title, Review, User
 from .permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrReadOnly
-from .serializers import (UserSerializer,
-                          CategorySerializer, GenreSerializer, TitleSerializer,
-                          ReviewSerializer, CommentSerializer,
+from .serializers import (UserSerializer, CategorySerializer, GenreSerializer,
+                          TitleSerializer, ReviewSerializer, CommentSerializer,
                           ReadOnlyTitleSerializer, SignUpSerializer,
-                          TokenSerializer, UserEditSerializer)
+                          TokenSerializer)
+
+import django_filters
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter
+
 
 
 JWT_SECRET_KEY = settings.SECRET_KEY
@@ -32,29 +32,6 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     pagination_class = PageNumberPagination
     permission_classes = (IsAdmin,)
-
-    @action(
-        methods=['GET', 'PATCH'],
-        detail=False,
-        url_path='me',
-        permission_classes=[permissions.IsAuthenticated],
-        serializer_class=UserEditSerializer,
-    )
-    def users_own_profile(self, request):
-        user = request.user
-        if request.method == "GET":
-            serializer = self.get_serializer(user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        if request.method == "PATCH":
-            serializer = self.get_serializer(
-                user,
-                data=request.data,
-                partial=True
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 '''
@@ -81,16 +58,31 @@ class LoginAPI(APIView):
 '''
 
 
+class TitleFilter(django_filters.FilterSet):
+    genre__slug = django_filters.CharFilter()
+    category__slug = django_filters.CharFilter()
+    year = django_filters.NumberFilter()
+    name = django_filters.CharFilter()
+
+    class Meta:
+        model = Title
+        fields = '__all__'
+
+
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
+    filterset_fields = ('name',)
+    filter_backends = (SearchFilter,)
+    search_fields = ('name',)
 
 
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
+    filterset_fields = ('name',)
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
 
@@ -101,7 +93,8 @@ class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminOrReadOnly,)
     pagination_class = LimitOffsetPagination
     filter_backends = (DjangoFilterBackend,)
-    genre = Filter(field_name='genre__slug')
+    filterset_class = TitleFilter
+
 
     def get_serializer_class(self):
         if self.request.method in SAFE_METHODS:
