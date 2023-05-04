@@ -144,13 +144,15 @@ def signup(request):
     serializer = SignUpSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     try:
-        user = User.objects.get_or_create(**serializer.validated_data)
+        user, _ = User.objects.get_or_create(**serializer.validated_data)
     except IntegrityError:
         return Response(status=status.HTTP_400_BAD_REQUEST)
     confirmation_code = default_token_generator.make_token(user)
     email = user.email
     send_mail(
+        'Helloy',
         f' Ваш код подтверждения: {confirmation_code}',
+        0,
         [f'{email}'],
         fail_silently=False,
     )
