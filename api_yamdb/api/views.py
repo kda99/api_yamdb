@@ -3,6 +3,8 @@ from django.db.models import Avg
 from django.core.mail import send_mail
 from django.conf import settings
 from django.db.utils import IntegrityError
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import viewsets, status, filters, mixins
@@ -13,6 +15,7 @@ from rest_framework.permissions import SAFE_METHODS, AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from reviews.models import Category, Genre, Title, Review, User
+from .filters import TitleFilter
 from .permissions import (IsAdminOrReadOnly, IsAuthorOrReadOnly,
                           IsAdminOrSuperUser)
 from .serializers import (UserSerializer, CategorySerializer, GenreSerializer,
@@ -20,52 +23,32 @@ from .serializers import (UserSerializer, CategorySerializer, GenreSerializer,
                           ReadOnlyTitleSerializer, SignUpSerializer,
                           TokenSerializer, AdminSerializer,)
 
-import django_filters
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import SearchFilter
-from django_filters.rest_framework import Filter
-
-
 
 JWT_SECRET_KEY = settings.SECRET_KEY
 
 
-class TitleFilter(django_filters.FilterSet):
-    category = Filter(field_name='category__slug')
-    genre = Filter(field_name='genre__slug')
-    year = django_filters.NumberFilter()
-    name = django_filters.CharFilter()
-
-    class Meta:
-        model = Title
-        fields = '__all__'
-
-
 class CategoryViewSet(mixins.CreateModelMixin,
-                               mixins.ListModelMixin,
-                               mixins.DestroyModelMixin,
-                               viewsets.GenericViewSet):
+                      mixins.ListModelMixin,
+                      mixins.DestroyModelMixin,
+                      viewsets.GenericViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
-    # filterset_fields = ('name','slug',)
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
 
 
 class GenreViewSet(mixins.CreateModelMixin,
-                               mixins.ListModelMixin,
-                               mixins.DestroyModelMixin,
-                               viewsets.GenericViewSet):
+                   mixins.ListModelMixin,
+                   mixins.DestroyModelMixin,
+                   viewsets.GenericViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
-    # filterset_fields = ('name','slug',)
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
-
 
 
 class TitleViewSet(viewsets.ModelViewSet):
