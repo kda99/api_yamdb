@@ -48,13 +48,9 @@ class Category(models.Model):
     slug = models.SlugField(
         max_length=50,
         unique=True,
+        db_index=True,
         verbose_name='Slug категории'
     )
-
-    class Meta:
-        indexes = [
-            models.Index(fields=['slug']),
-        ]
 
     def __str__(self):
         return self.name
