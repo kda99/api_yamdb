@@ -1,7 +1,6 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.db.models import Avg
 from django.core.mail import send_mail
-from django.conf import settings
 from django.db.utils import IntegrityError
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
@@ -22,9 +21,6 @@ from .serializers import (UserSerializer, CategorySerializer, GenreSerializer,
                           TitleSerializer, ReviewSerializer, CommentSerializer,
                           ReadOnlyTitleSerializer, SignUpSerializer,
                           TokenSerializer, AdminSerializer,)
-
-
-JWT_SECRET_KEY = settings.SECRET_KEY
 
 
 class CategoryViewSet(mixins.CreateModelMixin,
@@ -84,7 +80,11 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthorOrReadOnly,)
 
     def get_review(self):
-        return get_object_or_404(Review, id=self.kwargs.get('review_id'))
+        return get_object_or_404(
+            Review,
+            id=self.kwargs.get('review_id'),
+            title_id=self.kwargs.get('title_id')
+        )
 
     def get_queryset(self):
         return self.get_review().comments.all()
