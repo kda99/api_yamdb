@@ -10,7 +10,7 @@ from rest_framework import viewsets, status, filters, mixins
 from rest_framework.pagination import (LimitOffsetPagination,
                                        PageNumberPagination)
 from rest_framework.decorators import action, permission_classes, api_view
-from rest_framework.permissions import SAFE_METHODS, AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from reviews.models import Category, Genre, Title, Review, User
@@ -56,9 +56,9 @@ class TitleViewSet(viewsets.ModelViewSet):
     filterset_class = TitleFilter
 
     def get_serializer_class(self):
-        if self.request.method in SAFE_METHODS:
-            return ReadOnlyTitleSerializer
-        return TitleSerializer
+        if self.request.method in ['POST', 'DELETE', 'PATCH']:
+            return TitleSerializer
+        return ReadOnlyTitleSerializer
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
