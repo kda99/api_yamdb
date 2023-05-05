@@ -48,6 +48,7 @@ class GenreViewSet(mixins.CreateModelMixin,
 
 
 class TitleViewSet(viewsets.ModelViewSet):
+    http_method_names = ['get', 'post', 'patch', 'delete']
     queryset = Title.objects.all().annotate(
         rating=Avg('reviews__score'))
     permission_classes = (IsAdminOrReadOnly,)
@@ -62,6 +63,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
+    http_method_names = ['get', 'post', 'patch', 'delete']
     serializer_class = ReviewSerializer
     permission_classes = (IsAuthorOrReadOnly,)
 
@@ -76,6 +78,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
+    http_method_names = ['get', 'post', 'patch', 'delete']
     serializer_class = CommentSerializer
     permission_classes = (IsAuthorOrReadOnly,)
 
