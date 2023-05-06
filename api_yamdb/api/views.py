@@ -1,7 +1,7 @@
 from django.contrib.auth.tokens import default_token_generator
-from django.conf import settings
 from django.db.models import Avg
 from django.core.mail import send_mail
+from django.conf import settings
 from django.db.utils import IntegrityError
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
@@ -11,7 +11,7 @@ from rest_framework import viewsets, status, filters, mixins
 from rest_framework.pagination import (LimitOffsetPagination,
                                        PageNumberPagination)
 from rest_framework.decorators import action, permission_classes, api_view
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import SAFE_METHODS, AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from reviews.models import Category, Genre, Title, Review, User
@@ -21,7 +21,13 @@ from .permissions import (IsAdminOrReadOnly, IsAuthorOrReadOnly,
 from .serializers import (UserSerializer, CategorySerializer, GenreSerializer,
                           TitleSerializer, ReviewSerializer, CommentSerializer,
                           ReadOnlyTitleSerializer, SignUpSerializer,
-                          TokenSerializer, AdminSerializer,)
+                          TokenSerializer, UserMeSerializer,)
+from api_yamdb.settings import ADMIN_EMAIL
+
+
+JWT_SECRET_KEY = settings.SECRET_KEY
+
+
 
 
 class CategoryViewSet(mixins.CreateModelMixin,
@@ -49,7 +55,6 @@ class GenreViewSet(mixins.CreateModelMixin,
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    http_method_names = ['get', 'post', 'patch', 'delete']
     queryset = Title.objects.all().annotate(
         rating=Avg('reviews__score'))
     permission_classes = (IsAdminOrReadOnly,)
@@ -58,13 +63,12 @@ class TitleViewSet(viewsets.ModelViewSet):
     filterset_class = TitleFilter
 
     def get_serializer_class(self):
-        if self.request.method in ['POST', 'DELETE', 'PATCH']:
-            return TitleSerializer
-        return ReadOnlyTitleSerializer
+        if self.request.method in SAFE_METHODS:
+            return ReadOnlyTitleSerializer
+        return TitleSerializer
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    http_method_names = ['get', 'post', 'patch', 'delete']
     serializer_class = ReviewSerializer
     permission_classes = (IsAuthorOrReadOnly,)
 
@@ -79,16 +83,11 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    http_method_names = ['get', 'post', 'patch', 'delete']
     serializer_class = CommentSerializer
     permission_classes = (IsAuthorOrReadOnly,)
 
     def get_review(self):
-        return get_object_or_404(
-            Review,
-            id=self.kwargs.get('review_id'),
-            title_id=self.kwargs.get('title_id')
-        )
+        return get_object_or_404(Review, id=self.kwargs.get('review_id'))
 
     def get_queryset(self):
         return self.get_review().comments.all()
@@ -99,7 +98,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
-    serializer_class = AdminSerializer
+    serializer_class = UserSerializer
     permission_classes = [IsAdminOrSuperUser]
     pagination_class = PageNumberPagination
     lookup_field = 'username'
@@ -109,7 +108,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get', 'patch'],
             permission_classes=[IsAuthenticated],
-            serializer_class=UserSerializer,
+            serializer_class=UserMeSerializer,
             pagination_class=None)
     def me(self, request):
         if request.method == 'GET':
@@ -132,11 +131,12 @@ def signup(request):
     except IntegrityError:
         return Response(status=status.HTTP_400_BAD_REQUEST)
     confirmation_code = default_token_generator.make_token(user)
+    # email = user.email
     send_mail(
         'Hello!',
         f' Ваш код подтверждения: {confirmation_code}',
-        settings.EMAIL_BACKEND,
-        [user.email],
+        f'{ADMIN_EMAIL}',
+        [f'{user.email}'],
         fail_silently=False,
     )
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -152,6 +152,5 @@ def token(request):
     user = get_object_or_404(User, username=username)
     if default_token_generator.check_token(user, code):
         token = RefreshToken.for_user(user)
-        return Response({'token': str(token)}, status=status.HTTP_200_OK)
-    return Response('HTTP status code that describes an error',
-                    status=status.HTTP_400_BAD_REQUEST)
+        return Response(str(token.access_token), status=status.HTTP_200_OK)
+    return Response(serializer._errors, status=status.HTTP_400_BAD_REQUEST)

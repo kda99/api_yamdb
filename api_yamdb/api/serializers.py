@@ -1,4 +1,5 @@
-from rest_framework import serializers, exceptions, validators
+from rest_framework import serializers, exceptions
+from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 
 from reviews.models import User, Category, Genre, Title, Review, Comment
@@ -14,11 +15,16 @@ class CommentSerializer(serializers.ModelSerializer):
         slug_field='username', read_only=True)
 
     class Meta:
-        fields = ('id', 'text', 'author', 'pub_date')
+        fields = '__all__'
         model = Comment
+        read_only_fields = ('title', 'review')
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    title = serializers.SlugRelatedField(
+        slug_field='name',
+        read_only=True
+    )
     author = serializers.SlugRelatedField(
         default=serializers.CurrentUserDefault(),
         slug_field='username',
@@ -26,17 +32,17 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         request = self.context['request']
+        author = request.user
         title_id = self.context['view'].kwargs.get('title_id')
+        title = get_object_or_404(Title, pk=title_id)
         if request.method == 'POST':
-            if Review.objects.filter(
-                    title=get_object_or_404(Title, pk=title_id),
-                    author=request.user).exists():
+            if Review.objects.filter(title=title, author=author).exists():
                 raise exceptions.ValidationError('Вы не можете написать более'
                                                  'одного отзыва')
         return data
 
     class Meta:
-        fields = ('id', 'text', 'author', 'score', 'pub_date')
+        fields = '__all__'
         model = Review
 
 
@@ -75,7 +81,7 @@ class TitleSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserMeSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('username', 'email', 'first_name',
                   'last_name', 'bio', 'role')
@@ -83,20 +89,19 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
 
 
-class AdminSerializer(serializers.ModelSerializer):
-    username = serializers.RegexField(
-        validators=[
-            validators.UniqueValidator(queryset=User.objects.all())
-        ],
-        max_length=150,
-        regex=r'^[\w.@+-]+$'
-    )
-
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('username', 'email', 'first_name',
                   'last_name', 'bio', 'role')
         model = User
 
+        def validate_username(self, data):
+            if data == 'me':
+                raise ValidationError(
+                    ('Имя "me" использовать запрещено'),
+                    params={'value': data}
+                )
+            return data
 
 class SignUpSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(max_length=254, required=True)
