@@ -20,7 +20,7 @@ class User(AbstractUser):
         validators=(validate_username,),
         max_length=150,
         verbose_name='Имя пользователя',
-        null=True,
+        # null=True,
         unique=True,
         blank=False,
     )

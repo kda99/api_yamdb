@@ -89,13 +89,13 @@ class UserSerializer(serializers.ModelSerializer):
                   'last_name', 'bio', 'role')
         model = User
 
-        def validate_username(self, data):
-            if data == 'me':
-                raise validators.ValidationError(
-                    ('Имя "me" использовать запрещено'),
-                    params={'value': data}
-                )
-            return data
+        # def validate_username(self, data):
+        #     if data == 'me':
+        #         raise validators.ValidationError(
+        #             ('Имя "me" использовать запрещено'),
+        #             params={'value': data}
+        #         )
+        #     return data
 
 
 class SignUpSerializer(serializers.ModelSerializer):
