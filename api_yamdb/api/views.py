@@ -135,8 +135,8 @@ def signup(request):
     send_mail(
         'Hello!',
         f' Ваш код подтверждения: {confirmation_code}',
-        f'{ADMIN_EMAIL}',
-        [f'{user.email}'],
+        {ADMIN_EMAIL},
+        [user.email],
         fail_silently=False,
     )
     return Response(serializer.data, status=status.HTTP_200_OK)
