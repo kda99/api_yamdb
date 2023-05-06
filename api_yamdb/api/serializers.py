@@ -1,4 +1,4 @@
-from rest_framework import serializers, exceptions, validators
+from rest_framework import serializers, exceptions
 from rest_framework.generics import get_object_or_404
 
 from reviews.models import User, Category, Genre, Title, Review, Comment
@@ -88,14 +88,6 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('username', 'email', 'first_name',
                   'last_name', 'bio', 'role')
         model = User
-
-        # def validate_username(self, data):
-        #     if data == 'me':
-        #         raise validators.ValidationError(
-        #             ('Имя "me" использовать запрещено'),
-        #             params={'value': data}
-        #         )
-        #     return data
 
 
 class SignUpSerializer(serializers.ModelSerializer):
