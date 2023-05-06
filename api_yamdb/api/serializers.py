@@ -1,5 +1,4 @@
-from rest_framework import serializers, exceptions
-from rest_framework.exceptions import ValidationError
+from rest_framework import serializers, exceptions, validators
 from rest_framework.generics import get_object_or_404
 
 from reviews.models import User, Category, Genre, Title, Review, Comment
@@ -15,16 +14,11 @@ class CommentSerializer(serializers.ModelSerializer):
         slug_field='username', read_only=True)
 
     class Meta:
-        fields = '__all__'
+        fields = ('id', 'text', 'author', 'pub_date')
         model = Comment
-        read_only_fields = ('title', 'review')
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    title = serializers.SlugRelatedField(
-        slug_field='name',
-        read_only=True
-    )
     author = serializers.SlugRelatedField(
         default=serializers.CurrentUserDefault(),
         slug_field='username',
@@ -32,17 +26,17 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         request = self.context['request']
-        author = request.user
         title_id = self.context['view'].kwargs.get('title_id')
-        title = get_object_or_404(Title, pk=title_id)
         if request.method == 'POST':
-            if Review.objects.filter(title=title, author=author).exists():
+            if Review.objects.filter(
+                    title=get_object_or_404(Title, pk=title_id),
+                    author=request.user).exists():
                 raise exceptions.ValidationError('Вы не можете написать более'
                                                  'одного отзыва')
         return data
 
     class Meta:
-        fields = '__all__'
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
         model = Review
 
 
@@ -97,11 +91,12 @@ class UserSerializer(serializers.ModelSerializer):
 
         def validate_username(self, data):
             if data == 'me':
-                raise ValidationError(
+                raise validators.ValidationError(
                     ('Имя "me" использовать запрещено'),
                     params={'value': data}
                 )
             return data
+
 
 class SignUpSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(max_length=254, required=True)
