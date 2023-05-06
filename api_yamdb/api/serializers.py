@@ -1,4 +1,4 @@
-from rest_framework import serializers, exceptions
+from rest_framework import serializers, exceptions, validators
 from rest_framework.generics import get_object_or_404
 
 from reviews.models import User, Category, Genre, Title, Review, Comment
@@ -84,6 +84,14 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class AdminSerializer(serializers.ModelSerializer):
+    username = serializers.RegexField(
+        validators=[
+            validators.UniqueValidator(queryset=User.objects.all())
+        ],
+        max_length=150,
+        regex=r'^[\w.@+-]+$'
+    )
+
     class Meta:
         fields = ('username', 'email', 'first_name',
                   'last_name', 'bio', 'role')

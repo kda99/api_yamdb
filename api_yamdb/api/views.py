@@ -1,4 +1,5 @@
 from django.contrib.auth.tokens import default_token_generator
+from django.conf import settings
 from django.db.models import Avg
 from django.core.mail import send_mail
 from django.db.utils import IntegrityError
@@ -131,12 +132,11 @@ def signup(request):
     except IntegrityError:
         return Response(status=status.HTTP_400_BAD_REQUEST)
     confirmation_code = default_token_generator.make_token(user)
-    email = user.email
     send_mail(
         'Hello!',
         f' Ваш код подтверждения: {confirmation_code}',
-        0,
-        [f'{email}'],
+        settings.EMAIL_BACKEND,
+        [user.email],
         fail_silently=False,
     )
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -152,5 +152,6 @@ def token(request):
     user = get_object_or_404(User, username=username)
     if default_token_generator.check_token(user, code):
         token = RefreshToken.for_user(user)
-        return Response(str(token.access_token), status=status.HTTP_200_OK)
-    return Response(serializer._errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'token': str(token)}, status=status.HTTP_200_OK)
+    return Response('HTTP status code that describes an error',
+                    status=status.HTTP_400_BAD_REQUEST)

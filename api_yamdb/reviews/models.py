@@ -1,8 +1,9 @@
 from django.db import models
-import datetime as dt
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.core.exceptions import ValidationError
+
+from .validators import year_validator, validate_username
+
 
 class User(AbstractUser):
 
@@ -15,14 +16,20 @@ class User(AbstractUser):
         (MODERATOR, 'Модератор'),
         (ADMIN, 'Администратор'),
     )
-    password = models.CharField(max_length=128,
-                                verbose_name='password',
-                                blank=True)
-    groups = None
-    user_permissions = None
+    username = models.CharField(
+        validators=(validate_username,),
+        max_length=150,
+        verbose_name='Имя пользователя',
+        null=True,
+        unique=True,
+        blank=False,
+    )
     email = models.EmailField(max_length=254, unique=True)
     bio = models.TextField(blank=True)
     role = models.SlugField(choices=CHOICES, default=USER)
+
+    def __str__(self):
+        return self.username
 
     @property
     def is_admin(self):
@@ -36,8 +43,6 @@ class User(AbstractUser):
     def is_user(self):
         return self.role == User.USER
 
-    def __str__(self):
-        return self.username
 
 class Category(models.Model):
     """Модель категории произведения"""
@@ -54,6 +59,7 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class Genre(models.Model):
     """Модель жанра произведения"""
@@ -75,6 +81,7 @@ class Genre(models.Model):
     def __str__(self):
         return self.name
 
+
 class Title(models.Model):
     """Модель произведения, к которому пишут отзывы"""
     name = models.CharField(
@@ -82,6 +89,7 @@ class Title(models.Model):
         verbose_name='Название произведения'
     )
     year = models.PositiveSmallIntegerField(
+        validators=(year_validator,),
         blank=True,
         null=True,
         verbose_name='Год выпуска',
@@ -108,15 +116,9 @@ class Title(models.Model):
     class Meta:
         ordering = ('name',)
 
-    def validate_year(value):
-        current_year = dt.date.today().year
-        if (value > current_year):
-            raise ValidationError(
-                'Год произведения не должен быть больше текущего'
-            )
-
     def __str__(self):
         return self.name
+
 
 class Review(models.Model):
     """Модель отзыва"""
@@ -151,6 +153,7 @@ class Review(models.Model):
     def __str__(self):
         return self.text
 
+
 class Comment(models.Model):
     """Модель комментария к отзыву"""
     text = models.TextField(verbose_name='Комментарий')
@@ -178,6 +181,7 @@ class Comment(models.Model):
         return '"{}" to review "{}" by author "{}"'.format(
             self.text, self.review, self.author
         )
+
 
 class GenreTitle(models.Model):
     """Модель взаимосвязи жанров и произведений"""
