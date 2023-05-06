@@ -1,7 +1,8 @@
 from django.db import models
+import datetime as dt
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
-
+from django.core.exceptions import ValidationError
 
 class User(AbstractUser):
 
@@ -38,7 +39,6 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
-
 class Category(models.Model):
     """Модель категории произведения"""
     name = models.CharField(
@@ -54,7 +54,6 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class Genre(models.Model):
     """Модель жанра произведения"""
@@ -75,7 +74,6 @@ class Genre(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class Title(models.Model):
     """Модель произведения, к которому пишут отзывы"""
@@ -110,9 +108,15 @@ class Title(models.Model):
     class Meta:
         ordering = ('name',)
 
+    def validate_year(value):
+        current_year = dt.date.today().year
+        if (value > current_year):
+            raise ValidationError(
+                'Год произведения не должен быть больше текущего'
+            )
+
     def __str__(self):
         return self.name
-
 
 class Review(models.Model):
     """Модель отзыва"""
@@ -147,7 +151,6 @@ class Review(models.Model):
     def __str__(self):
         return self.text
 
-
 class Comment(models.Model):
     """Модель комментария к отзыву"""
     text = models.TextField(verbose_name='Комментарий')
@@ -175,7 +178,6 @@ class Comment(models.Model):
         return '"{}" to review "{}" by author "{}"'.format(
             self.text, self.review, self.author
         )
-
 
 class GenreTitle(models.Model):
     """Модель взаимосвязи жанров и произведений"""
