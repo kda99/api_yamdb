@@ -135,7 +135,7 @@ def signup(request):
     send_mail(
         'Hello!',
         f' Ваш код подтверждения: {confirmation_code}',
-        settings.ADMIN_EMAIL,
+        settings.EMAIL_BACKEND,
         [user.email],
         fail_silently=False,
     )

@@ -2,6 +2,7 @@ from rest_framework import serializers, exceptions
 from rest_framework.generics import get_object_or_404
 
 from reviews.models import User, Category, Genre, Title, Review, Comment
+from reviews.validators import validate_username
 
 
 class TokenSerializer(serializers.Serializer):
@@ -90,19 +91,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
 
 
-class SignUpSerializer(serializers.ModelSerializer):
+class SignUpSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=254, required=True)
-    username = serializers.RegexField(regex=r'^[\w.@+-]+$',
-                                      max_length=150,
-                                      required=True)
-
-    class Meta:
-        fields = ('email', 'username')
-        model = User
-
-    def validate(self, data):
-        if data['username'].lower() == 'me':
-            raise serializers.ValidationError(
-                {"username": ["Нельзя использовать данное имя"]}
-            )
-        return data
+    username = serializers.CharField(validators=(validate_username,),
+                                     max_length=150)
