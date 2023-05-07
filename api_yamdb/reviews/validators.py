@@ -23,7 +23,3 @@ def validate_username(value):
             (f'Не допустимые символы <{value}> в нике.'),
             params={'value': value},
         )
-    if len(value) > 150:
-        raise AssertionError(
-            ('Имя пользователя не может быть более 150 символов.'),
-        )

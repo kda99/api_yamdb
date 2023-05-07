@@ -1,5 +1,6 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.db.models import Avg
+from django.conf import settings
 from django.core.mail import send_mail
 from django.conf import settings
 from django.db.utils import IntegrityError
@@ -17,12 +18,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from reviews.models import Category, Genre, Title, Review, User
 from .filters import TitleFilter
 from .permissions import (IsAdminOrReadOnly, IsAuthorOrReadOnly,
-                          IsAdminOrSuperUser)
+                          IsAdmin)
 from .serializers import (UserSerializer, CategorySerializer, GenreSerializer,
                           TitleSerializer, ReviewSerializer, CommentSerializer,
                           ReadOnlyTitleSerializer, SignUpSerializer,
                           TokenSerializer, UserMeSerializer,)
-from api_yamdb.settings import ADMIN_EMAIL
 
 
 JWT_SECRET_KEY = settings.SECRET_KEY
@@ -99,7 +99,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAdminOrSuperUser]
+    permission_classes = [IsAdmin]
     pagination_class = PageNumberPagination
     lookup_field = 'username'
     filter_backends = (filters.SearchFilter, )
@@ -135,7 +135,7 @@ def signup(request):
     send_mail(
         'Hello!',
         f' Ваш код подтверждения: {confirmation_code}',
-        {ADMIN_EMAIL},
+        settings.ADMIN_EMAIL,
         [user.email],
         fail_silently=False,
     )
